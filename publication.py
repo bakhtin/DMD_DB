@@ -9,7 +9,7 @@ class Publication:
     # fields:
     title = ""
     authors = []
-    affiliations = ""
+    affiliation = ""
     abstract = ""
     pubtitle = ""
     pubnumber = 0

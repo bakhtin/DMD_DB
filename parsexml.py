@@ -1,10 +1,18 @@
 from os import listdir
-from pprint import pprint
 import xml.etree.ElementTree as ET
 import time
 from publication import Publication
+import db_executer
+from mysql.connector import connection
 
-folder = "./files/"
+
+cnx = connection.MySQLConnection(user='dmd', password='500000',
+                                 host='127.0.0.1',
+                                 database='dmd_db')
+cursor = cnx.cursor()
+
+
+folder = "/home/horn/PycharmProjects/grequests_test/files1/"
 files = [folder + f for f in listdir(folder)]
 
 if __name__ == '__main__':
@@ -36,17 +44,30 @@ if __name__ == '__main__':
                 if content.tag == 'root':
                     content = content[2]  # get document
                     pub = Publication(content)
-                    if pub.title == 'NULL':
-                        print(pub.url)
-                        exit()
-
-                    #print(pub)
-
+                    print db_executer.parse_and_execute(cursor=cursor,
+                                                  publisher_name=pub.publisher,
+                                                  affiliation_name=pub.affiliation,
+                                                  issue_name_name=pub.issue_name,
+                                                  issue_type_type=pub.issue_type,
+                                                  keywords=pub.keywords,
+                                                  authors=pub.authors,
+                                                  publication_title=pub.title,
+                                                  publication_issn=pub.issn,
+                                                  publication_isbn=pub.isbn,
+                                                  publication_doi=pub.doi,
+                                                  publication_pubdate=pub.pubdate,
+                                                  publication_pages=pub.pages,
+                                                  publication_volume=pub.volume,
+                                                  publication_abstract=pub.abstract,
+                                                  publication_url=pub.url,
+                                                  publication_pubnumber=pub.pubnumber)
+                    cnx.commit()
                     count += 1
 
 
-            except ET.ParseError as e:
-                pass
-
+            except Exception as e:
+                print e
+                continue
+    cnx.close()
     print(" %i unique records " % (count))
     print(" --- %s seconds --- " % (time.time() - start_time))
