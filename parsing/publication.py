@@ -1,4 +1,5 @@
 from pprint import pprint
+import re
 
 __author__ = 'bogdan'
 
@@ -90,7 +91,7 @@ class Publication:
             if len(kw) == 0 or kw == 'NULL':
                 continue
             else:
-                keywords[k] = kw
+                keywords[k] = set(kw)
 
         return keywords
 
@@ -104,7 +105,7 @@ class Publication:
         if len(authors) == 0:
             return 'NULL'
         else:
-            authors = tuple([x.strip().replace(',', '') for x in authors])
+            authors = set([x.strip().replace(',', '') for x in authors])
 
         return authors
 
