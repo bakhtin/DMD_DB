@@ -1,56 +1,6 @@
 __author__ = 'Artyom Bakhtin'
 
 
-def add_publisher(cursor, name):
-    query = ('insert into publisher(name) values ("%s")' % name)
-    cursor.execute(query)
-    return cursor.lastrowid
-
-
-def add_affiliation(cursor, name):
-    query = ('insert into affiliation(name) values ("%s")' % name)
-    cursor.execute(query)
-    return cursor.lastrowid
-
-
-def add_issue_name(cursor, name):
-    query = ('insert into issue_name(name) values ("%s")' % name)
-    cursor.execute(query)
-    return cursor.lastrowid
-
-
-def add_issue_type(cursor, type):
-    query = ('insert into issue_type(type) values ("%s")' % type)
-    cursor.execute(query)
-    return cursor.lastrowid
-
-
-kwbuffer = {}
-
-
-def add_keyword(cursor, kw):
-    query = ('insert into keyword(word) values ("%s")' % kw)
-    try:
-        cursor.execute(query)
-        kwbuffer[kw] = cursor.lastrowid
-        return cursor.lastrowid
-    except:
-        return kwbuffer[kw]
-
-
-aubuffer = {}
-
-
-def add_author(cursor, name):
-    query = ('insert into author(name) values ("%s")' % name)
-    try:
-        cursor.execute(query)
-        aubuffer[name] = cursor.lastrowid
-        return cursor.lastrowid
-    except:
-        return aubuffer[name]
-
-
 def add_publication(cursor, title, issn, isbn, doi, pubdate, pages,
                     volume, abstract, url, pub_number,
                     issue_name_id, issue_type_id, affiliation_id, publisher_id):
@@ -66,36 +16,71 @@ def add_publication(cursor, title, issn, isbn, doi, pubdate, pages,
     return cursor.lastrowid
 
 
+def insert_unique(cursor, table, attrib, thing, id="id"):
+    sel_query = ('select %s from %s where %s=\'%s\'') % (id, table, attrib, thing)
+    ins_query = ('insert into %s(%s) values (\'%s\')') % (table, attrib, thing)
+
+    cursor.execute(sel_query)
+    row = cursor.fetchone()
+    if row is None:
+        try:
+            cursor.execute(ins_query)
+            return cursor.lastrowid
+        except Exception as e:
+            print "something bad happened: %s;\t%s" % (ins_query, e)
+    else:
+        return row[0]
+
+
 def parse_and_execute(**kwargs):
     '''
-    dict expected ({'param_name': 'param_value1'}) -- for 1:n, 1:1 records;
-    dict expected ({'param_name': ('param_value1', 'param_value2')}) -- for n:m records;
-    :param cursor
-    :param publisher_name:
-    :param affiliation_name:
-    :param issue_name_name:
-    :param issue_type_type:
-    :param keywords{}:
-    :param authors[]:
-    :param publication_title
-    :param publication_issn
-    :param publication_isbn
-    :param publication_doi
-    :param publication_pubdate
-    :param publication_pages
-    :param publication_volume
-    :param publication_abstract
-    :param publication_url
-    :param publication_pubnumber
+    dict
+    expected({'param_name': 'param_value1'}) - -
+    for 1: n, 1:1
+    records;
+    dict
+    expected({'param_name': ('param_value1', 'param_value2')}) - -
+    for n: m
+    records;
+    :param
+    cursor
+    :param
+    publisher_name:
+    :param
+    affiliation_name:
+    :param
+    issue_name_name:
+    :param
+    issue_type_type:
+    :param
+    keywords
+    {}:
+    :param
+    authors[]:
+    :param
+    publication_title
+    :param
+    publication_issn
+    :param
+    publication_isbn
+    :param
+    publication_doi
+    :param
+    publication_pubdate
+    :param
+    publication_pages
+    :param
+    publication_volume
+    :param
+    publication_abstract
+    :param
+    publication_url
+    :param
+    publication_pubnumber
     :return: last_publication_id
     '''
 
     cursor = kwargs['cursor']
-
-    last_publisher_id = add_publisher(cursor, kwargs['publisher_name'])
-    last_affiliation_id = add_affiliation(cursor, kwargs['affiliation_name'])
-    last_issue_name_id = add_issue_name(cursor, kwargs['issue_name_name'])
-    last_issue_type_id = add_issue_type(cursor, kwargs['issue_type_type'])
 
     # process keywords
     kws = kwargs['keywords']
@@ -106,14 +91,19 @@ def parse_and_execute(**kwargs):
                 if kwtype not in kw_ids:
                     kw_ids[kwtype] = set()
                 else:
-                    kw_ids[kwtype].add(add_keyword(cursor, kw))
+                    kw_ids[kwtype].add(insert_unique(cursor, "keyword", "word", kw))
 
     # process authors
     authors = kwargs['authors']
     authors_ids = []
     if authors is not None and authors != 'NULL':
         for name in authors:
-            authors_ids.append(add_author(cursor, name))
+            authors_ids.append(insert_unique(cursor, "author", "name", name))
+
+    last_publisher_id = insert_unique(cursor, "publisher", "name", kwargs['publisher_name'])
+    last_affiliation_id = insert_unique(cursor, "affiliation", "name", kwargs['affiliation_name'])
+    last_issue_name_id = insert_unique(cursor, "issue_name", "name", kwargs['issue_name_name'])
+    last_issue_type_id = insert_unique(cursor, "issue_type", "type", kwargs['issue_type_type'])
 
     # process pubication date
     year = kwargs['publication_pubdate'][0]
@@ -153,7 +143,7 @@ def parse_and_execute(**kwargs):
     for a_id in authors_ids:
         query = (
             'insert into publication_author(publication_id, author_id) values ("%s", "%s")' % (
-            last_publication_id, a_id))
+                last_publication_id, a_id))
         cursor.execute(query)
 
     '''

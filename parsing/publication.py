@@ -1,4 +1,3 @@
-from pprint import pprint
 import re
 
 __author__ = 'bogdan'
@@ -33,7 +32,7 @@ class Publication:
             text = self.document.findall(attribute)
             try:
                 text = text[0].text
-                return 'NULL' if text == 'None' else text
+                return 'NULL' if text == 'None' or text is None else re.escape(text)
             except IndexError as e:
                 return 'NULL'
 
@@ -41,7 +40,7 @@ class Publication:
             try:
                 text = self.document.findall(father)
                 text = text[0].findall(attribute)
-                text = [x.text for x in text if x != 'None']
+                text = [re.escape(x.text) for x in text if x != 'None' and x is not None]
                 return text
             except IndexError as e:
                 return 'NULL'
