@@ -34,49 +34,27 @@ def insert_unique(cursor, table, attrib, thing, id="id"):
 
 def parse_and_execute(**kwargs):
     '''
-    dict
-    expected({'param_name': 'param_value1'}) - -
-    for 1: n, 1:1
-    records;
-    dict
-    expected({'param_name': ('param_value1', 'param_value2')}) - -
-    for n: m
-    records;
-    :param
-    cursor
-    :param
-    publisher_name:
-    :param
-    affiliation_name:
-    :param
-    issue_name_name:
-    :param
-    issue_type_type:
-    :param
-    keywords
-    {}:
-    :param
-    authors[]:
-    :param
-    publication_title
-    :param
-    publication_issn
-    :param
-    publication_isbn
-    :param
-    publication_doi
-    :param
-    publication_pubdate
-    :param
-    publication_pages
-    :param
-    publication_volume
-    :param
-    publication_abstract
-    :param
-    publication_url
-    :param
-    publication_pubnumber
+    dict expected({'param_name': 'param_value1'}) - -
+    for 1: n, 1:1 records;
+    dict expected({'param_name': ('param_value1', 'param_value2')}) - -
+    for n: m records;
+    :param cursor
+    :param publisher_name:
+    :param affiliation_name:
+    :param issue_name_name:
+    :param issue_type_type:
+    :param keywords{}:
+    :param authors[]:
+    :param publication_title
+    :param publication_issn
+    :param publication_isbn
+    :param publication_doi
+    :param publication_pubdate
+    :param publication_pages
+    :param publication_volume
+    :param publication_abstract
+    :param publication_url
+    :parampublication_pubnumber
     :return: last_publication_id
     '''
 
@@ -144,21 +122,5 @@ def parse_and_execute(**kwargs):
         query = (
             'insert into publication_author(publication_id, author_id) values ("%s", "%s")' % (
                 last_publication_id, a_id))
-        cursor.execute(query)
-
-    '''
-    if last_author_ids:
-        for author_id in last_author_ids:
-            add_publication_author(kwargs['cursor'], last_publication_id, author_id)
-    for type_id in last_keyword_ids.items():
-        for keyword_id in type_id[1]:
-            add_keyword_word_type(kwargs['cursor'], keyword_id[0], type_id[0], last_publication_id)
-
-    try:
-        kwargs['cursor'].fetchall()
-    except:
-        pass
-
-    '''
 
     return last_publication_id
