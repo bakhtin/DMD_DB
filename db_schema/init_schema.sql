@@ -121,11 +121,12 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `dmd_db`.`keyword_word`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `dmd_db`.`keyword_word` ;
+DROP TABLE IF EXISTS `dmd_db`.`keyword` ;
 
-CREATE TABLE IF NOT EXISTS `dmd_db`.`keyword_word` (
+CREATE TABLE IF NOT EXISTS `dmd_db`.`keyword` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `word` VARCHAR(254) NOT NULL,
+  `type` ENUM('thesaurusterms', 'controlledterms', 'uncontrolledterms'),
   PRIMARY KEY (`id`),
   UNIQUE INDEX `word_UNIQUE` (`word` ASC))
 ENGINE = InnoDB;
