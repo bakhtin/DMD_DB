@@ -122,5 +122,6 @@ def parse_and_execute(**kwargs):
         query = (
             'insert into publication_author(publication_id, author_id) values ("%s", "%s")' % (
                 last_publication_id, a_id))
+        cursor.execute(query)
 
     return last_publication_id
