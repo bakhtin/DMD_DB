@@ -1,12 +1,31 @@
 __author__ = 'Artyom Bakhtin'
 
 
+def add_quotes_if_not_null(arg):
+    return arg if arg == 'NULL' else '\'%s\'' % arg
+
+
 def add_publication(cursor, title, issn, isbn, doi, pubdate, pages,
                     volume, abstract, url, pub_number,
                     issue_name_id, issue_type_id, affiliation_id, publisher_id):
+    title = add_quotes_if_not_null(title)
+    issn = add_quotes_if_not_null(issn)
+    isbn = add_quotes_if_not_null(isbn)
+    doi = add_quotes_if_not_null(doi)
+    pubdate = add_quotes_if_not_null(pubdate)
+    pages = add_quotes_if_not_null(pages)
+    volume = add_quotes_if_not_null(volume)
+    abstract = add_quotes_if_not_null(abstract)
+    url = add_quotes_if_not_null(url)
+    pub_number = add_quotes_if_not_null(pub_number)
+    issue_name_id = add_quotes_if_not_null(issue_name_id)
+    issue_type_id = add_quotes_if_not_null(issue_type_id)
+    affiliation_id = add_quotes_if_not_null(affiliation_id)
+    publisher_id = add_quotes_if_not_null(publisher_id)
+
     query = ('insert into publication(title, issn, isbn, doi, pubdate, pages, volume, abstract, url, pub_number, '
              'issue_name_id, issue_type_id, affiliation_id, publisher_id) '
-             'values ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")' % (
+             'values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)' % (
                  title, issn, isbn, doi, pubdate,
                  pages, volume, abstract, url,
                  pub_number, issue_name_id,
@@ -17,6 +36,10 @@ def add_publication(cursor, title, issn, isbn, doi, pubdate, pages,
 
 
 def insert_unique(cursor, table, attrib, thing, id="id"):
+    if thing == 'NULL':
+        # insert null? no. skip this
+        return 'NULL'
+
     sel_query = ('select %s from %s where %s=\'%s\'') % (id, table, attrib, thing)
     ins_query = ('insert into %s(%s) values (\'%s\')') % (table, attrib, thing)
 
@@ -32,79 +55,57 @@ def insert_unique(cursor, table, attrib, thing, id="id"):
         return row[0]
 
 
-def parse_and_execute(**kwargs):
+# @profile
+def parse_and_execute(cursor, pub):
     '''
-    dict expected({'param_name': 'param_value1'}) - -
-    for 1: n, 1:1 records;
-    dict expected({'param_name': ('param_value1', 'param_value2')}) - -
-    for n: m records;
     :param cursor
-    :param publisher_name:
-    :param affiliation_name:
-    :param issue_name_name:
-    :param issue_type_type:
-    :param keywords{}:
-    :param authors[]:
-    :param publication_title
-    :param publication_issn
-    :param publication_isbn
-    :param publication_doi
-    :param publication_pubdate
-    :param publication_pages
-    :param publication_volume
-    :param publication_abstract
-    :param publication_url
-    :parampublication_pubnumber
+    :param publication
     :return: last_publication_id
     '''
 
-    cursor = kwargs['cursor']
-
     # process keywords
-    kws = kwargs['keywords']
     kw_ids = {}  # key - keyword type, value - list of keywords ids
-    if kws is not None and kws != 'NULL':
-        for kwtype in kws:  # for each keyword type
-            for kw in kws[kwtype]:  # for each keyword of specified type
+    if pub.keywords is not None and pub.keywords != 'NULL':
+        for kwtype in pub.keywords:  # for each keyword type
+            for kw in pub.keywords[kwtype]:  # for each keyword of specified type
                 if kwtype not in kw_ids:
-                    kw_ids[kwtype] = set()
+                    kw_ids[kwtype] = []
                 else:
-                    kw_ids[kwtype].add(insert_unique(cursor, "keyword", "word", kw))
+                    kw_ids[kwtype].append(insert_unique(cursor, "keyword", "word", kw))
 
     # process authors
-    authors = kwargs['authors']
     authors_ids = []
-    if authors is not None and authors != 'NULL':
-        for name in authors:
+    if pub.authors is not None and pub.authors != 'NULL':
+        for name in pub.authors:
             authors_ids.append(insert_unique(cursor, "author", "name", name))
 
-    last_publisher_id = insert_unique(cursor, "publisher", "name", kwargs['publisher_name'])
-    last_affiliation_id = insert_unique(cursor, "affiliation", "name", kwargs['affiliation_name'])
-    last_issue_name_id = insert_unique(cursor, "issue_name", "name", kwargs['issue_name_name'])
-    last_issue_type_id = insert_unique(cursor, "issue_type", "type", kwargs['issue_type_type'])
+    last_publisher_id = insert_unique(cursor, "publisher", "name", pub.publisher)
+    last_affiliation_id = insert_unique(cursor, "affiliation", "name", pub.affiliation)
+    last_issue_name_id = insert_unique(cursor, "issue_name", "name", pub.issue_name)
+    last_issue_type_id = insert_unique(cursor, "issue_type", "type", pub.issue_type)
 
     # process pubication date
-    year = kwargs['publication_pubdate'][0]
-    if len(kwargs['publication_pubdate']) == 2:
-        month = kwargs['publication_pubdate'][1]
+    year = pub.pubdate[0]
+    if len(pub.pubdate) == 2:
+        month = pub.pubdate[1]
         day = '01'
     else:
         month = '01'
         day = '02'
-    kwargs['publication_pubdate'] = '%s-%s-%s' % (year, month, day)
+    pubdate = '%s-%s-%s' % (year, month, day)
 
     # process publication
     last_publication_id = add_publication(cursor,
-                                          kwargs['publication_title'],
-                                          kwargs['publication_issn'],
-                                          kwargs['publication_isbn'],
-                                          kwargs['publication_doi'],
-                                          kwargs['publication_pubdate'],
-                                          kwargs['publication_pages'],
-                                          kwargs['publication_volume'],
-                                          kwargs['publication_abstract'],
-                                          kwargs['publication_url'],
-                                          kwargs['publication_pubnumber'],
+                                          pub.title,
+                                          pub.issn,
+                                          pub.isbn,
+                                          pub.doi,
+                                          pubdate,
+                                          pub.pages,
+                                          pub.volume,
+                                          pub.abstract,
+                                          pub.url,
+                                          pub.pubnumber,
                                           last_issue_name_id,
                                           last_issue_type_id,
                                           last_affiliation_id,

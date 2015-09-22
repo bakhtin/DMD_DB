@@ -32,7 +32,7 @@ class Publication:
             text = self.document.findall(attribute)
             try:
                 text = text[0].text
-                return 'NULL' if text == 'None' or text is None else re.escape(text)
+                return 'NULL' if text == 'None' or text is None else text
             except IndexError as e:
                 return 'NULL'
 
@@ -40,12 +40,13 @@ class Publication:
             try:
                 text = self.document.findall(father)
                 text = text[0].findall(attribute)
-                text = [re.escape(x.text) for x in text if x != 'None' and x is not None]
+                text = [x.text for x in text if x != 'None' and x is not None]
                 return text
             except IndexError as e:
                 return 'NULL'
 
     # xml_document is a Element of xml.etree.ElementTree with all attributes
+    # @profile
     def __init__(self, xml_document):
         self.document = xml_document
 
@@ -61,10 +62,41 @@ class Publication:
         self.publisher = self.get('publisher')
         self.issue_name = self.get('pubtitle')
         self.issue_type = self.get('pubtype')
-        self.pages = self.get('spage') + "-" + self.get('epage')
+        self.pages = self.parse_pages()
         self.pubdate = self.parse_pubdate()
         self.keywords = self.parse_keywords()
         self.pubnumber = self.get('punumber')
+
+        self.escape()
+
+    def parse_pages(self):
+        sp = self.get('spage')
+        ep = self.get('epage')
+
+        if sp == 'NULL' and ep == 'NULL':
+            return 'NULL'
+        elif sp == 'NULL':
+            return ep
+        elif ep == 'NULL':
+            return sp
+        else:
+            return sp + "-" + ep
+
+    def escape(self):
+        self.title = re.escape(self.title)
+        self.authors = [re.escape(x) for x in self.authors]
+        self.affiliation = re.escape(self.affiliation)
+        self.abstract = re.escape(self.abstract)
+        self.issn = re.escape(self.issn)
+        self.isbn = re.escape(self.isbn)
+        self.doi = re.escape(self.doi)
+        self.url = re.escape(self.url)
+        self.publisher = re.escape(self.publisher)
+        self.issue_name = re.escape(self.issue_name)
+        self.issue_type = re.escape(self.issue_type)
+        self.pages = re.escape(self.pages)
+        for key in self.keywords:
+            self.keywords[key] = [re.escape(x) for x in self.keywords[key]]
 
     # returns a string with format: month-year
     def parse_pubdate(self):
@@ -100,7 +132,7 @@ class Publication:
         if str_authors == "NULL" or str_authors is None:
             return "NULL"
 
-        authors = str_authors.split("; ")
+        authors = str_authors.split(";")
         if len(authors) == 0:
             return 'NULL'
         else:
