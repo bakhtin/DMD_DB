@@ -36,8 +36,6 @@ def main():
 
         # for each query in the buffer
         for id in data:
-            # restore the header
-            # id = '<?xml version="1.0" encoding="UTF-8"?>' + id
             try:
                 # parse xml tree
                 content = ET.fromstring(id)
@@ -53,7 +51,7 @@ def main():
                 continue
         cnx.commit()
 
-        print("--- %i seconds elapsed --- " % time.time() - start_time)
+        print("--- %i seconds elapsed --- " % (time.time() - start_time))
 
     cnx.close()
     print(" %i unique records " % (count))
