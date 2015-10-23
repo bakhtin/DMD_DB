@@ -69,15 +69,15 @@ def parse_and_execute(cursor, pub):
         for kwtype in pub.keywords:  # for each keyword type
             for kw in pub.keywords[kwtype]:  # for each keyword of specified type
                 if kwtype not in kw_ids:
-                    kw_ids[kwtype] = []
+                    kw_ids[kwtype] = set()
                 else:
-                    kw_ids[kwtype].append(insert_unique(cursor, "keyword", "word", kw))
+                    kw_ids[kwtype].add(insert_unique(cursor, "keyword", "word", kw))
 
     # process authors
-    authors_ids = []
+    authors_ids = set()
     if pub.authors is not None and pub.authors != 'NULL':
         for name in pub.authors:
-            authors_ids.append(insert_unique(cursor, "author", "name", name))
+            authors_ids.add(insert_unique(cursor, "author", "name", name))
 
     last_publisher_id = insert_unique(cursor, "publisher", "name", pub.publisher)
     last_affiliation_id = insert_unique(cursor, "affiliation", "name", pub.affiliation)
