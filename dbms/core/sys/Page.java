@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 /**
  * @author Bogdan Vaneev
  *         Innopolis University
- * @date 10/22/2015
+ *         10/22/2015
  */
 public class Page {
     public final static int pageSize = 4096;
@@ -30,7 +30,7 @@ public class Page {
         overflow = 0;
     }
 
-    public byte[] serialize() throws IOException {
+    public ByteBuffer serialize() throws IOException {
         ByteBuffer buf = ByteBuffer.allocate(pageSize);
         buf.putInt(number);
         buf.put(type);
@@ -42,7 +42,7 @@ public class Page {
         }
         buf.putInt(overflow);
 
-        return buf.array();
+        return buf;
 
     }
 
@@ -60,9 +60,6 @@ public class Page {
             p.offsets[i] = buf.getInt();
         }
         p.overflow = buf.get();
-
-        if (buf.position() < pageSize) System.err.println("FUCK");
-
         return p;
     }
 
