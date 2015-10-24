@@ -1,6 +1,7 @@
 package core.sys;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -17,10 +18,10 @@ public class Pager {
     private int totalPages = 0;
 
 
-            Pager(String path) {
-                this.path = path;
-                try {
-                    file = new RandomAccessFile(path, "rw");
+    Pager(String path) {
+        this.path = path;
+        try {
+            file = new RandomAccessFile(path, "rw");
             channel = file.getChannel();
             totalPages = (int) (file.length() / Page.pageSize);
         } catch (Exception e) {
