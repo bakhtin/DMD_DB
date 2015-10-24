@@ -15,7 +15,7 @@ public class TestCache {
     @Test
     public void testCache() throws Exception {
         Cache cache = new Cache("huidb");
-        int n = 700;
+        int n = 100000;
         int runs = 1000000;
         Random R = new Random();
         for (int i = 0; i < runs; i++) {
