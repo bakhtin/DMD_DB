@@ -1,6 +1,5 @@
 package core.sys;
 
-import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -22,7 +21,6 @@ public class Pager {
         this.path = path;
         try {
             file = new RandomAccessFile(path, "rw");
-            channel = file.getChannel();
             totalPages = (int) (file.length() / Page.pageSize);
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -30,60 +28,29 @@ public class Pager {
         }
     }
 
-    public Page readPage(int n) throws Exception{
-        if(n > totalPages) throw new Exception("WRITE PAGE ERROR: page number " + n + " > total: " + totalPages );
+    public Page readPage(int n) throws Exception {
+        if (n > totalPages) throw new Exception("WRITE PAGE ERROR: page number " + n + " > total: " + totalPages);
 
         byte[] page = new byte[Page.pageSize];
-        Page p = null;
-        try {
-            file.seek(0);
-            file.seek(n * Page.pageSize);
-            file.read(page);
 
-            p = Page.deserialize(ByteBuffer.wrap(page));
+        file.seek(n * Page.pageSize);
+        file.read(page);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        Page p = Page.deserialize(ByteBuffer.wrap(page));
         return p;
     }
 
-    public void writePage(Page p) throws Exception{
-        if(p.number > totalPages) throw new Exception("WRITE PAGE ERROR: page number " + p.number + " > total: " + totalPages );
-        try {
-            file.seek(0);
-            file.seek(p.number * Page.pageSize);
+    public void writePage(Page p) throws Exception {
+        if (p.number > totalPages)
+            throw new Exception("WRITE PAGE ERROR: page number " + p.number + " > total: " + totalPages);
+        file.seek((long) p.number * Page.pageSize);
             file.write(p.serialize().array());
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-    }
 
-    public Page allocatePage() throws IOException {
+    public Page allocatePage() throws Exception {
         Page p = new Page(totalPages++);
-        file.seek(0);
-        file.seek(p.number * Page.pageSize);
-        file.write(p.serialize().array());
+        writePage(p);
         return p;
-    }
-
-    public static void main(String[] arg) {
-        Pager pager = new Pager("huidb");
-        try {
-
-            Page q = pager.readPage(10);
-            q.data[0] = (byte)0xFF;
-            pager.writePage(q);
-
-            for (int i = 0; i < pager.totalPages; i++) {
-                Page p = pager.readPage(i);
-                System.out.println(p.number + " " + p.data[0]);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 }
