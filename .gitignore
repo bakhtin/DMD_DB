@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 .idea/*
+=======
+*.idea
+.idea/
+>>>>>>> bogdan-devel
 .idea
 *.pyc
 *.bak
 *.lprof
+out/

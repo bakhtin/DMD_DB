@@ -17,10 +17,10 @@ public class Pager {
     private int totalPages = 0;
 
 
-    Pager(String path) {
-        this.path = path;
-        try {
-            file = new RandomAccessFile(path, "rw");
+            Pager(String path) {
+                this.path = path;
+                try {
+                    file = new RandomAccessFile(path, "rw");
             channel = file.getChannel();
             totalPages = (int) (file.length() / Page.pageSize);
         } catch (Exception e) {
