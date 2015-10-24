@@ -24,4 +24,6 @@ public class Attribute  {
     }
 
     public byte getFlags(){ return flags;}
+
+
 }

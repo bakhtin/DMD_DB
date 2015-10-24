@@ -8,8 +8,8 @@ import java.nio.ByteBuffer;
  *         Innopolis University
  *         10/22/2015
  */
-public class Page {
-    public final static int pageSize = 4096;
+public class Page implements Comparable<Integer> {
+    public final static int pageSize = 1024;
     public final static int headerSize = 9;
 
     int number;
@@ -63,4 +63,12 @@ public class Page {
         return p;
     }
 
+    @Override
+    public int compareTo(Integer o) {
+        return Integer.compareUnsigned(number, o);
+    }
+
+    public Integer getNumber() {
+        return number;
+    }
 }
