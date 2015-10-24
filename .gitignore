@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 *.idea
 .idea/
+=======
+.idea/*
+>>>>>>> 02dc9ea0dcf4f8ecd1353444ca78f6596fa68bcd
 .idea
 *.pyc
 *.bak
