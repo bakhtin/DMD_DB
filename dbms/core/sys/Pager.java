@@ -3,7 +3,6 @@ package core.sys;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.LinkedList;
 
 /**
  * @author Bogdan Vaneev
@@ -30,45 +29,30 @@ public class Pager {
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        file.close();
-        super.finalize();
-    }
-
-    public Page readPage(int n) throws Exception {
-        if (n > totalPages)
-            throw new Exception("READ PAGE ERROR: page number " + n + " > total: " + totalPages);
+    public Page readPage(int n) throws Exception{
+        if(n > totalPages) throw new Exception("WRITE PAGE ERROR: page number " + n + " > total: " + totalPages );
 
         byte[] page = new byte[Page.pageSize];
-
-        file.seek((long) n * Page.pageSize);
-        file.read(page);
-        Page p = Page.deserialize(ByteBuffer.wrap(page));
-
-        return p;
-    }
-
-    public Page readPageChannel(int n) throws Exception {
-        if (n > totalPages)
-            throw new Exception("READ PAGE ERROR: page number " + n + " > total: " + totalPages);
-
-        ByteBuffer page = ByteBuffer.allocate(Page.pageSize);
-
         Page p = null;
-        channel.read(page, (long)n * Page.pageSize);
-        page.flip();
-        p = Page.deserialize(page);
+        try {
+            file.seek(0);
+            file.seek(n * Page.pageSize);
+            file.read(page);
+
+            p = Page.deserialize(ByteBuffer.wrap(page));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return p;
     }
 
-    public void writePage(Page p) throws Exception {
-        if (p.number > totalPages)
-            throw new Exception("WRITE PAGE ERROR: page number " + p.number + " > total: " + totalPages);
-
+    public void writePage(Page p) throws Exception{
+        if(p.number > totalPages) throw new Exception("WRITE PAGE ERROR: page number " + p.number + " > total: " + totalPages );
         try {
-            file.seek((long) p.number * Page.pageSize);
+            file.seek(0);
+            file.seek(p.number * Page.pageSize);
             file.write(p.serialize().array());
         } catch (IOException e) {
             e.printStackTrace();
@@ -77,9 +61,28 @@ public class Pager {
 
     public Page allocatePage() throws IOException {
         Page p = new Page(totalPages++);
-        file.seek((long) p.number * Page.pageSize);
+        file.seek(0);
+        file.seek(p.number * Page.pageSize);
         file.write(p.serialize().array());
         return p;
+    }
+
+    public static void main(String[] arg) {
+        Pager pager = new Pager("huidb");
+        try {
+
+            Page q = pager.readPage(10);
+            q.data[0] = (byte)0xFF;
+            pager.writePage(q);
+
+            for (int i = 0; i < pager.totalPages; i++) {
+                Page p = pager.readPage(i);
+                System.out.println(p.number + " " + p.data[0]);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
