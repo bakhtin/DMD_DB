@@ -7,9 +7,9 @@ import core.sys.Page;
  *         Innopolis University
  *         10/24/2015
  */
-public class CachedPage implements Comparable<Integer> {
-    private Integer used = 0;
-    private Page page;
+class CachedPage implements Comparable<Integer> {
+    Integer used = 0;
+    Page page;
 
     CachedPage(Page p) {
         page = p;

@@ -21,7 +21,7 @@ public class Page implements Comparable<Integer> {
     int[] offsets;
     int overflow;
 
-    Page(int n) {
+    public Page(int n) {
         number = n;
         type = 0;
         numberOfRecords = 0;
