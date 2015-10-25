@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+    <h3>{{ authors.0.name }}</h3>
+    <div id="pub_author">
+        {% for author in authors %}
+            <div>
+                <h3>Title</h3>
+                {{ author.title }}
+                <h3>Abstract</h3>
+                {{ author.abstract }}
+                <a href="{% url 'show_publication_detail' author.publication_id %}">Details</a>
+            </div>
+        {% endfor %}
+    </div>
+    {% if curr_page > 1 %}
+        <a href="{% url 'show_author_page_base' authors.0.a_id %}/page/{{ curr_page|add:"-1" }}/limit/10/"><< Previous page </a>
+    {% endif %}
+    {% if next_page > 0 %}
+        <a href="{% url 'show_author_page_base' authors.0.a_id %}/page/{{ next_page }}/limit/10/">Next page >></a>
+    {% endif %}
+
+
+{% endblock %}

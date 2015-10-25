@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'dmd_project',
     'publication',
+    'author',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -73,7 +74,7 @@ TEMPLATES = [
 
 
 
-WSGI_APPLICATION = 'dmd_project.wsgi.application'
+WSGI_APPLICATION = 'dbms_web.wsgi.application'
 
 
 # Database
