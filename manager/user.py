@@ -3,7 +3,7 @@ from django.contrib.auth import hashers as hashers
 from Crypto import Random
 import base64
 import datetime
-
+from django.utils import timezone
 
 def dictfetchall(cursor):
     # Return all rows from a cursor as a dict
@@ -58,7 +58,7 @@ def is_authenticated(session_id):
         if a:
             if base64.b64decode(a['session_id']).split(':')[0] == session_id \
                     and a['user_id'] == user_id\
-                    and datetime.datetime.now() < a['expire_time']:
+                    and timezone.now() < a['expire_time']:
                 return True
             else:
                 return False

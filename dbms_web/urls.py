@@ -24,7 +24,8 @@ urlpatterns = [
     url(r'^author/author_id/([0-9]+)/page/([0-9]+)/limit/([0-9]+)', author.views.related_articles),
     url(r'^author/author_id/([0-9]+)', author.views.related_articles, {'page': 1, 'limit': 10},
         name='show_author_page_base'),
-    url(r'^login/', manager.views.do_authenticate, name='authentication')
+    url(r'^login/', manager.views.do_authenticate, name='authentication'),
+    url(r'^publication/add/', publication.views.publication_add, name='publication_add'),
 
 
 ]

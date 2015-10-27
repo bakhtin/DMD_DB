@@ -38,7 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'dmd_project',
+    'dbms_web',
     'publication',
     'author',
 )
@@ -54,7 +54,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
 )
 
-ROOT_URLCONF = 'dmd_project.urls'
+ROOT_URLCONF = 'dbms_web.urls'
 
 TEMPLATES = [
     {
