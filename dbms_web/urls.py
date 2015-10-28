@@ -18,6 +18,7 @@ from django.contrib import admin
 import views, publication.views, author.views, manager.views
 
 urlpatterns = [
+    url(r'^$', publication.views.search_publication),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^search/', views.search_pub),
     url(r'^publication/publication_id/([0-9]+)', publication.views.publication_full, name='show_publication_detail'),
@@ -26,6 +27,7 @@ urlpatterns = [
         name='show_author_page_base'),
     url(r'^login/', manager.views.do_authenticate, name='authentication'),
     url(r'^publication/add/', publication.views.publication_add, name='publication_add'),
+    url(r'^publication/edit/([0-9]+)/', publication.views.publication_edit, name='publication_edit')
 
 
 ]

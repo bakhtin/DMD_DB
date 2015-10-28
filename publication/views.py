@@ -145,16 +145,19 @@ def publication_add(request):
             # Many-to-many
             thesaurus_terms_keywords = add_form.cleaned_data['thesaurus_terms_keywords']
             if thesaurus_terms_keywords:
-                thesaurus_terms_keywords = thesaurus_terms_keywords.split(';')
+                thesaurus_terms_keywords = [line for line in thesaurus_terms_keywords.split('\r\n') if
+                                            line.strip() != '']
             controlled_terms_keywords = add_form.cleaned_data['controlled_terms_keywords']
             if controlled_terms_keywords:
-                controlled_terms_keywords = controlled_terms_keywords.split(';')
+                controlled_terms_keywords = [line for line in controlled_terms_keywords.split('\r\n') if
+                                             line.strip() != '']
             uncontrolled_terms_keywords = add_form.cleaned_data['uncontrolled_terms_keywords']
             if uncontrolled_terms_keywords:
-                uncontrolled_terms_keywords = uncontrolled_terms_keywords.split(';')
+                uncontrolled_terms_keywords = [line for line in uncontrolled_terms_keywords.split('\r\n') if
+                                               line.strip() != '']
             authors = add_form.cleaned_data['authors']
             if authors:
-                authors = authors.split(';')
+                authors = [line for line in authors.split('\r\n') if line.strip() != '']
             # FKs
             publisher = add_form.cleaned_data['publisher']
             affiliation = add_form.cleaned_data['affiliation']
@@ -239,7 +242,7 @@ def publication_add(request):
             authors_last_ids = []
             for kw in authors:
                 try:
-                    cursor.execute("insert into auhtors(name) VALUES (%s)", [kw])
+                    cursor.execute("insert into author(name) VALUES (%s)", [kw])
                     authors_last_ids.append(int(cursor.fetchone()[0]))
                 except IntegrityError:
                     cursor.execute("select id from author where name=%s", [kw])
@@ -280,20 +283,20 @@ def publication_add(request):
             # process publication itself
             try:
                 cursor.execute("insert INTO publication(title, issn, isbn, doi, pubdate, pages, volume, abstract, url, "
-                           "pub_number, issue_name_id, issue_type_id, affiliation_id, publisher_id) VALUES "
-                           "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                           [title, issn, isbn, doi, pubdate, pages, volume, abstract, url, pub_number,
-                            issue_name_last_id, issue_type_last_id, affiliation_last_id, publisher_last_id])
+                               "pub_number, issue_name_id, issue_type_id, affiliation_id, publisher_id) VALUES "
+                               "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                               [title, issn, isbn, doi, pubdate, pages, volume, abstract, url, pub_number,
+                                issue_name_last_id, issue_type_last_id, affiliation_last_id, publisher_last_id])
 
                 publication_last_id = cursor.lastrowid
             except IntegrityError:
                 error_message = 'Duplicate record'
                 return render_to_response('publication_add.html', {'error_message': error_message},
-                                              context_instance=RequestContext(request))
+                                          context_instance=RequestContext(request))
             except:
                 error_message = 'General error'
                 return render_to_response('publication_add.html', {'error_message': error_message},
-                                              context_instance=RequestContext(request))
+                                          context_instance=RequestContext(request))
 
             # don't know how to handle exceptions on insertion
 
@@ -314,8 +317,304 @@ def publication_add(request):
             error_message = 'Successfully inserted!'
         else:
             return render_to_response('publication_add.html', {'add_form': add_form},
-                                              context_instance=RequestContext(request))
+                                      context_instance=RequestContext(request))
     add_form = PubAdditionForm()
     return render_to_response('publication_add.html', {'add_form': add_form,
                                                        'error_message': error_message},
-                                              context_instance=RequestContext(request))
+                              context_instance=RequestContext(request))
+
+
+@require_http_methods(['GET', 'POST'])
+def publication_edit(request, publication_id):
+    if request.method == 'GET':
+        cursor = connection.cursor()
+        # fetching form data
+        # fetching basic info
+        cursor.execute("SELECT p.id, title, issn, isbn, doi, pubdate, pages, volume, abstract, url, pub_number, "
+                       "i_name.name as issue_name, i_type.type as issue_type, "
+                       "aff.name as affiliation, pshr.name as publisher "
+                       "FROM publication p, issue_name i_name, issue_type i_type, affiliation aff, publisher pshr "
+                       "WHERE p.id = %s "
+                       "and p.issue_name_id=i_name.id "
+                       "and p.issue_type_id=i_type.id "
+                       "and p.affiliation_id=aff.id "
+                       "and p.publisher_id=pshr.id", [publication_id])
+        try:
+            publication_info = dictfetchall(cursor)[0]
+        except:
+            raise Http404('No such publication')
+        # fetching keywords
+        cursor.execute("select word, t1.type from keyword, "
+                       "(select keyword_id, type from publication_keyword where publication_id = %s) as t1"
+                       " where keyword.id=t1.keyword_id",
+                       [publication_id])
+
+        publication_kwds = cursor.fetchall()
+
+        # group by keyword type
+        words = {}
+        for word, type in publication_kwds:
+            words.setdefault(type, []).append(word)
+
+        publication_kwds = words
+
+        # fetch thesaurusterms
+        publication_thesaurusterms = ''
+        if 'thesaurusterms' in publication_kwds:
+            for word in publication_kwds['thesaurusterms']:
+                publication_thesaurusterms += '%s\r\n' % word
+            del publication_kwds['thesaurusterms']
+
+        # fetch controlledterms
+        publication_controlledterms = ''
+        if 'controlledterms' in publication_kwds:
+            for word in publication_kwds['controlledterms']:
+                publication_controlledterms += '%s\r\n' % word
+            del publication_kwds['controlledterms']
+        # fetch uncontrolledterms
+        publication_uncontrolledterms = ''
+        if 'uncontrolledterms' in publication_kwds:
+            for word in publication_kwds['uncontrolledterms']:
+                publication_uncontrolledterms += '%s\r\n' % word
+            del publication_kwds['uncontrolledterms']
+
+        cursor.execute("select name from author, (select author_id from publication_author "
+                       "where publication_author.publication_id = %s) as t1 "
+                       "where author.id=t1.author_id", [publication_id])
+        publication_authors = cursor.fetchall()
+        if publication_authors:
+            publication_authors = '\n'.join([x[0] for x in publication_authors])
+
+        edit_form = PubAdditionForm(initial={'title': publication_info['title'],
+                                             'issn': publication_info['issn'],
+                                             'isbn': publication_info['isbn'],
+                                             'doi': publication_info['doi'],
+                                             'pubdate': publication_info['pubdate'],
+                                             'pages': publication_info['pages'],
+                                             'volume': publication_info['volume'],
+                                             'abstract': publication_info['abstract'],
+                                             'url': publication_info['url'],
+                                             'pub_number': publication_info['pub_number'],
+                                             'issue_name': publication_info['issue_name'],
+                                             'issue_type': publication_info['issue_type'],
+                                             'affiliation': publication_info['affiliation'],
+                                             'publisher': publication_info['publisher'],
+                                             'authors': publication_authors,
+                                             'thesaurus_terms_keywords': publication_thesaurusterms,
+                                             'controlled_terms_keywords': publication_controlledterms,
+                                             'uncontrolled_terms_keywords': publication_uncontrolledterms})
+
+        return render_to_response('publication_edit.html',
+                                  {'edit_form': edit_form},
+                                  context_instance=RequestContext(request))
+    else:
+        cursor = connection.cursor()
+
+        error_message = ''
+        edit_form = PubAdditionForm(request.POST)
+        if edit_form.is_valid():
+            # Many-to-many
+            thesaurus_terms_keywords = edit_form.cleaned_data['thesaurus_terms_keywords']
+            thesaurus_terms_keywords_init = thesaurus_terms_keywords
+            if thesaurus_terms_keywords:
+                thesaurus_terms_keywords = [line for line in thesaurus_terms_keywords.split('\r\n') if
+                                            line.strip() != '']
+            controlled_terms_keywords = edit_form.cleaned_data['controlled_terms_keywords']
+            controlled_terms_keywords_init = controlled_terms_keywords
+            if controlled_terms_keywords:
+                controlled_terms_keywords = [line for line in controlled_terms_keywords.split('\r\n') if
+                                             line.strip() != '']
+            uncontrolled_terms_keywords = edit_form.cleaned_data['uncontrolled_terms_keywords']
+            uncontrolled_terms_keywords_init = uncontrolled_terms_keywords
+            if uncontrolled_terms_keywords:
+                uncontrolled_terms_keywords = [line for line in uncontrolled_terms_keywords.split('\r\n') if
+                                               line.strip() != '']
+            authors = edit_form.cleaned_data['authors']
+            authors_init = authors
+            if authors:
+                authors = [line for line in authors.split('\r\n') if line.strip() != '']
+            # FKs
+            publisher = edit_form.cleaned_data['publisher']
+            affiliation = edit_form.cleaned_data['affiliation']
+            issue_name = edit_form.cleaned_data['issue_name']
+            issue_type = edit_form.cleaned_data['issue_type']
+            # the rest
+            title = edit_form.cleaned_data['title']
+            issn = edit_form.cleaned_data['issn']
+            isbn = edit_form.cleaned_data['isbn']
+            doi = edit_form.cleaned_data['doi']
+            pubdate = edit_form.cleaned_data['pubdate']
+            pages = edit_form.cleaned_data['pages']
+            volume = edit_form.cleaned_data['volume']
+            abstract = edit_form.cleaned_data['abstract']
+            url = edit_form.cleaned_data['url']
+            pub_number = edit_form.cleaned_data['pub_number']
+
+            # we don't bookkeep old records. i.e. just remove FK in MxM table, but keep record itself
+            # all update process should be one single transaction in case something goes wrong
+            # But our DB doesn't have transactions :(. We cannot rollback partial insertions
+
+            # processing author update
+            authors_publication_has = []
+            authors_publication_acquire = []
+
+            # which authors we already have in publication
+            cursor.execute("select name, t1.author_id from author, (select author_id from publication_author "
+                           "where publication_author.publication_id = %s) as t1 "
+                           "where author.id=t1.author_id", [publication_id])
+            a = dictfetchall(cursor)
+            for author in a:
+                authors_publication_has.append((int(publication_id), int(author['author_id']), author['name']))
+
+            # which authors we don't have in our publication but want to add
+            for author in authors:
+                cursor.execute("select id, name from author where name=%s", [author])
+                try:
+                    # which authors are already in DB but not linked to this publication
+                    a = dictfetchall(cursor)[0]
+                    authors_publication_acquire.append((int(publication_id), int(a['id']), a['name']))
+                except:
+                    # which authors are entirely new in our DB
+                    authors_publication_acquire.append((int(publication_id), 0, author))
+
+            authors_to_append = set(authors_publication_acquire) - set(authors_publication_has)
+            authors_to_delete = set(authors_publication_has) - set(authors_publication_acquire)
+
+            for author in authors_to_append:
+                # if author doesn't exist in DB yet add it
+                if author[1] == 0:
+                    cursor.execute("insert into author(name) VALUES (%s)", [author[2]])
+                    cursor.execute("insert into publication_author(publication_id, author_id) VALUES (%s,%s)",
+                                   [publication_id, cursor.lastrowid])
+                # if author already in DB but not linked to this publication yet -> link it
+                else:
+                    cursor.execute("insert into publication_author(publication_id, author_id) VALUES (%s,%s)",
+                                   [publication_id, author[1]])
+            for author in authors_to_delete:
+                cursor.execute("delete from publication_author where publication_id=%s and author_id=%s",
+                               [publication_id, author[1]])
+
+            # processing keyword update
+            kwds_publication_has = []
+            kwds_publication_acquire = []
+            publication_kwds = {'thesaurusterms': thesaurus_terms_keywords,
+                                'controlledterms': controlled_terms_keywords,
+                                'uncontrolledterms': uncontrolled_terms_keywords}
+
+            # which keywords we already have in publication
+            cursor.execute("select word, t1.keyword_id, t1.type from keyword, (select keyword_id, type from "
+                           "publication_keyword where publication_keyword.publication_id = %s) as t1 "
+                           "where keyword.id=t1.keyword_id", [publication_id])
+            a = dictfetchall(cursor)
+            for word in a:
+                kwds_publication_has.append((int(publication_id), int(word['keyword_id']), word['word'], word['type']))
+
+            # which keywords we don't have in our publication but want to add
+            for type, words in publication_kwds.items():
+                for word in words:
+                    cursor.execute("select id from keyword where word=%s", [word])
+                    try:
+                        # which keywords are already in DB but not linked to this publication
+                        a = dictfetchall(cursor)[0]
+                        kwds_publication_acquire.append((int(publication_id), int(a['id']), word, type))
+                    except:
+                        # which keywords are entirely new in our DB
+                        kwds_publication_acquire.append((int(publication_id), 0, word, type))
+
+            kwds_to_append = set(kwds_publication_acquire) - set(kwds_publication_has)
+            kwds_to_delete = set(kwds_publication_has) - set(kwds_publication_acquire)
+
+            for word in kwds_to_append:
+                if word[1] == 0:
+                    cursor.execute("insert into keyword(word) VALUES (%s)", [word[2]])
+                    cursor.execute(
+                        "insert into publication_keyword(publication_id, keyword_id, type) VALUES (%s,%s,%s)",
+                        [publication_id, cursor.lastrowid, word[3]])
+                else:
+                    cursor.execute(
+                        "insert into publication_keyword(publication_id, keyword_id, type) VALUES (%s,%s,%s)",
+                        [publication_id, word[1], word[3]])
+            for word in kwds_to_delete:
+                cursor.execute("delete from publication_keyword where publication_id=%s and keyword_id=%s",
+                               [publication_id, word[1]])
+
+            # processing publisher
+            cursor.execute("select id from publisher WHERE name=%s", [publisher])
+            try:
+                publisher_last_id = cursor.fetchone()[0]
+            except:
+                cursor.execute("insert into publisher(name) VALUES (%s)", [publisher])
+                publisher_last_id = cursor.lastrowid
+
+            # processing affiliation
+            cursor.execute("select id from affiliation WHERE name=%s", [affiliation])
+            try:
+                affiliation_last_id = cursor.fetchone()[0]
+            except:
+                cursor.execute("insert into affiliation(name) VALUES (%s)", [affiliation])
+                affiliation_last_id = cursor.lastrowid
+
+            # processing issue_name
+            cursor.execute("select id from issue_name WHERE name=%s", [issue_name])
+            try:
+                issue_name_last_id = cursor.fetchone()[0]
+            except:
+                cursor.execute("insert into issue_name(name) VALUES (%s)", [issue_name])
+                issue_name_last_id = cursor.lastrowid
+
+            # processing issue_type
+            cursor.execute("select id from issue_type WHERE type=%s", [issue_type])
+            try:
+                issue_type_last_id = cursor.fetchone()[0]
+            except:
+                cursor.execute("insert into issue_type(name) VALUES (%s)", [issue_type])
+                issue_type_last_id = cursor.lastrowid
+
+            # processing publication itself. Update it
+            # title, issn, isbn, doi , pubdate , pages , volume , abstract , url , pub_number, publisher, affiliation, issue_name, issue_type
+            try:
+                cursor.execute(
+                    "update publication set title=%s, issn=%s, isbn=%s, doi=%s, pubdate=%s, pages=%s, volume=%s,"
+                    "abstract=%s, url=%s, pub_number=%s, publisher_id=%s, affiliation_id=%s, issue_name_id=%s,"
+                    "issue_type_id=%s where id=%s", [title, issn, isbn, doi, pubdate, pages, volume, abstract, url, pub_number,
+                                         publisher_last_id, affiliation_last_id, issue_name_last_id,
+                                         issue_type_last_id, publication_id])
+                error_message = 'Publication #%s successfully updated' % publication_id
+
+                edit_form = PubAdditionForm(initial={'title': title,
+                                                     'issn': issn,
+                                                     'isbn': isbn,
+                                                     'doi': doi,
+                                                     'pubdate': pubdate,
+                                                     'pages': pages,
+                                                     'volume': volume,
+                                                     'abstract': abstract,
+                                                     'url': url,
+                                                     'pub_number': pub_number,
+                                                     'issue_name': issue_name,
+                                                     'issue_type': issue_type,
+                                                     'affiliation': affiliation,
+                                                     'publisher': publisher,
+                                                     'authors': authors_init,
+                                                     'thesaurus_terms_keywords': thesaurus_terms_keywords_init,
+                                                     'controlled_terms_keywords': controlled_terms_keywords_init,
+                                                     'uncontrolled_terms_keywords': uncontrolled_terms_keywords_init})
+            except IntegrityError:
+                error_message = 'Duplicate record'
+
+        return render_to_response('publication_edit.html',
+                                  {'edit_form': edit_form,
+                                   'error_message': error_message},
+                                  context_instance=RequestContext(request))
+
+
+@require_http_methods(['GET', 'POST'])
+def search_publication(request):
+    if request.method == 'GET':
+        cursor = connection.cursor()
+        cursor.execute("select id, title from publication order by id desc limit 0, 7")
+        recent_publications = dictfetchall(cursor)
+
+        return render_to_response(['main.html', 'recent_publications.html'],
+                                  {'recent_publications': recent_publications},
+                                  context_instance=RequestContext(request))
