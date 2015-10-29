@@ -1,11 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
 <h2>Publication data</h2>
+    <a class="btn btn-default" href="{% url "publication_edit" publications.id %}">[EDIT]</a>
+    <form action="{% url "publication_delete" %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="publication_id" value="{{ publications.id }}">
+        <input class="btn btn-default" type="submit" value="[DELETE]">
+    </form>
 <ul>
 {% for field_name, value in publications.items %}
     {% if field_name == "url" %}
@@ -44,5 +45,4 @@
     <li><a href="{% url 'show_publication_detail' relevant_publication.id %}">{{ relevant_publication.title }}</a></li>
 {% endfor %}
 </ul>
-</body>
-</html>
+{% endblock %}

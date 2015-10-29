@@ -4,6 +4,7 @@ from Crypto import Random
 import base64
 import datetime
 from django.utils import timezone
+from dbms_web.custom_exception import *
 
 def dictfetchall(cursor):
     # Return all rows from a cursor as a dict
@@ -27,15 +28,18 @@ def authenticate(user_login, password):
                 a = Random.new()
                 session_id = base64.b64encode(hashers.make_password(a.read(32), hasher='unsalted_md5') + ':' + str(user_id))
 
-                cursor.execute("insert into session(session_id, user_id, expire_time) values(%s, %s, %s)"
-                               "ON DUPLICATE KEY UPDATE session_id=%s;", [session_id, user_id, expire_time,
-                                                                          session_id])
-                # return session_id string to set user's cookie
+                cursor.execute("select user_id from session WHERE user_id=%s", [user_id])
+                if cursor.fetchall == '':
+                    cursor.execute("insert into session(session_id, user_id, expire_time) values(%s, %s, %s)",
+                                   [session_id, user_id, expire_time, session_id])
+                else:
+                    cursor.execute("update session set session_id=%s, expire_time=%s", [session_id, expire_time])
+                    # return session_id string to set user's cookie
                 return session_id
         except:
-            return False
+            raise BadCredentials
     else:
-        return False
+        raise BadCredentials
 
 
 def deauthenticate(session_id):
@@ -61,6 +65,21 @@ def is_authenticated(session_id):
                     and timezone.now() < a['expire_time']:
                 return True
             else:
-                return False
+                raise NotAuthenticatedException
     except:
-        return False
+        raise NotAuthenticatedException
+
+
+def check_role(session_id):
+    try:
+        cookie = base64.b64decode(session_id).split(":")
+        user_id = int(cookie[1])
+        cursor = connection.cursor()
+        cursor.execute("select role from user_role, role where user_id=%s and user_role.role_id=role.id", [user_id])
+        a = dictfetchall(cursor)[0]
+        if a:
+            return a['role']
+        else:
+            return None
+    except:
+        return None

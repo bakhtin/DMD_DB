@@ -3,10 +3,10 @@
     {% if error_message %}
         {{ error_message }}
     {% else %}
-<form method="POST" action="">
-    {% csrf_token %}
-    {{ edit_form.as_p }}
-    <input type="submit" value="Submit">
-</form>
+        <form method="POST" action="">
+            {% csrf_token %}
+            {{ edit_form.as_p }}
+            <input type="submit" value="Submit">
+        </form>
     {% endif %}
 {% endblock %}
