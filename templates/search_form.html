@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% block content %}
-    <form method="POST" action="">
+    <form method="POST" action="/search/">
         {% csrf_token %}
         <div class="search_form">
             <div id="search_criteria" class="search_criteria">
