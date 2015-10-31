@@ -6,7 +6,9 @@ from forms import SearchForm
 @require_http_methods(['GET', 'POST'])
 def search_pub(request):
     if request.method == 'POST':
-        pass
+        search_form = SearchForm(request.POST)
+        a = search_form.fields['operator']
+        return
     else:
         search_form = SearchForm()
     return render_to_response('search_form.html', {'search_form': search_form},

@@ -13,3 +13,11 @@ class BadCredentials(Exception):
 
     def __str__(self):
         return '%s. Code %s.' % (self.text, self.code)
+
+class BadQuery(Exception):
+    def __init__(self):
+        self.text = 'bad parameters passed'
+        self.code = '12'
+
+    def __str__(self):
+        return '%s. Code %s.' % (self.text, self.code)

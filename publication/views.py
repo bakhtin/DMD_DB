@@ -129,7 +129,7 @@ def publication_full(request, publication_id):
             return redirect('authentication')
 
     # go authorize first, maaaan
-    except NotAuthenticatedException:
+    except (NotAuthenticatedException, KeyError):
         return redirect('authentication')
 
 
@@ -336,7 +336,7 @@ def publication_add(request):
             return redirect('authentication')
 
     # go authorize first, maaaan
-    except NotAuthenticatedException:
+    except (NotAuthenticatedException, KeyError):
         return redirect('authentication')
 
 
@@ -635,20 +635,32 @@ def publication_edit(request, publication_id):
             return redirect('authentication')
 
     # go authorize first, maaaan
-    except NotAuthenticatedException:
+    except (NotAuthenticatedException, KeyError):
         return redirect('authentication')
 
 
 @require_http_methods(['GET', 'POST'])
 def search_publication(request):
-    if request.method == 'GET':
-        cursor = connection.cursor()
-        cursor.execute("select id, title from publication order by id desc limit 0, 7")
-        recent_publications = dictfetchall(cursor)
+    # check authenticated
+    try:
+        if is_authenticated(request.COOKIES['session_id']) and \
+                (check_role(request.COOKIES['session_id']) in ['admin', 'modify']):
+            # go ahead, authorized user
+            if request.method == 'GET':
+                cursor = connection.cursor()
+                cursor.execute("select id, title from publication order by id desc limit 0, 7")
+                recent_publications = dictfetchall(cursor)
 
-        return render_to_response(['main.html', 'recent_publications.html'],
-                                  {'recent_publications': recent_publications},
-                                  context_instance=RequestContext(request))
+                return render_to_response(['main.html', 'recent_publications.html'],
+                                          {'recent_publications': recent_publications},
+                                          context_instance=RequestContext(request))
+        # go authorize first, maaaan
+        else:
+            return redirect('authentication')
+
+    # go authorize first, maaaan
+    except (NotAuthenticatedException, KeyError):
+        return redirect('authentication')
 
 
 @require_http_methods(['POST'])
@@ -660,6 +672,7 @@ def publication_delete(request):
             try:
                 publication_id = int(request.POST.get('publication_id'))
                 cursor = connection.cursor()
+                # fetching FKs in publication table
                 cursor.execute(
                     "select publisher_id, affiliation_id, issue_name_id, issue_type_id from publication where id=%s",
                     [publication_id])
@@ -675,54 +688,61 @@ def publication_delete(request):
                     cursor.execute("select author_id from publication_author where publication_id=%s", [publication_id])
                     publication_authors = cursor.fetchall()
 
-                    # remove affiliation if nobody use it
-                    cursor.execute("select id from publication where affiliation_id = %s limit 0,1",
-                                   [publication_fks['affiliation_id']])
-                    if not cursor.fetchone():
-                        cursor.execute("delete from affiliation where id=%s", [publication_fks['affiliation_id']])
-
-                    # remove publisher if nobody use it
-                    cursor.execute("select id from publication where publisher_id = %s limit 0,1",
-                                   [publication_fks['publisher_id']])
-                    if not cursor.fetchone():
-                        cursor.execute("delete from publisher where id=%s", [publication_fks['publisher_id']])
-
-                    # remove issue_name if nobody use it
-                    cursor.execute("select id from publication where issue_name_id = %s limit 0,1",
-                                   [publication_fks['issue_name_id']])
-                    if not cursor.fetchone():
-                        cursor.execute("delete from issue_name where id=%s", [publication_fks['issue_name_id']])
-
-                    # remove issue_type if nobody use it
-                    cursor.execute("select id from publication where issue_type_id = %s limit 0,1",
-                                   [publication_fks['issue_type_id']])
-                    if not cursor.fetchone():
-                        cursor.execute("delete from issue_type where id=%s", [publication_fks['issue_type_id']])
-
                     # remove keyword if nobody use it
                     for kw_id in publication_kwds:
-                        cursor.execute("select publication_id from publication_keyword where keyword_id = %s limit 0,1",
-                                       [kw_id])
-                        if not cursor.fetchone():
-                            cursor.execute("delete from keyword where id=%s", [kw_id])
+                        cursor.execute("select publication_id from publication_keyword where keyword_id = %s "
+                                       "and publication_id!=%s limit 0,1",
+                                       [kw_id, publication_id])
+                        if cursor.fetchone() is None:
+                            cursor.execute("delete from publication_keyword where publication_id=%s", [publication_id])
+                            cursor.execute("delete from keyword where id=%s", [kw_id[0]])
 
                     # remove author if nobody use it
                     for author_id in publication_authors:
-                        cursor.execute("select publication_id from publication_author where author_id = %s limit 0,1",
-                                       [author_id])
-                        if not cursor.fetchone():
-                            cursor.execute("delete from author where id=%s", [author_id])
+                        cursor.execute("select publication_id from publication_author where author_id = %s "
+                                       "and publication_id!=%s limit 0,1",
+                                       [author_id, publication_id])
+                        if cursor.fetchone() is None:
+                            cursor.execute("delete from publication_author WHERE publication_id=%s", [publication_id])
+                            cursor.execute("delete from author where id=%s", [author_id[0]])
+
+                    # remove publication itself
                     cursor.execute("delete from publication where id=%s", [publication_id])
-                    return HttpResponse('Publication %s successfully removed' % cursor.lastrowid)
-                except:
+
+                    # remove affiliation if nobody use it
+                    cursor.execute("select id from publication where affiliation_id = %s and id!=%s limit 0,1",
+                                   [publication_fks['affiliation_id'], publication_id])
+                    if cursor.fetchone() is None:
+                        cursor.execute("delete from affiliation where id=%s", [int(publication_fks['affiliation_id'])])
+
+                    # remove publisher if nobody use it
+                    cursor.execute("select id from publication where publisher_id = %s and id!=%s limit 0,1",
+                                   [publication_fks['publisher_id'], publication_id])
+                    if cursor.fetchone() is None:
+                        cursor.execute("delete from publisher where id=%s", [publication_fks['publisher_id']])
+
+                    # remove issue_name if nobody use it
+                    cursor.execute("select id from publication where issue_name_id = %s and id!=%s limit 0,1",
+                                   [publication_fks['issue_name_id'], publication_id])
+                    if cursor.fetchone() is None:
+                        cursor.execute("delete from issue_name where id=%s", [publication_fks['issue_name_id']])
+
+                    # remove issue_type if nobody use it
+                    cursor.execute("select id from publication where issue_type_id = %s and id!=%s limit 0,1",
+                                   [publication_fks['issue_type_id'], publication_id])
+                    if cursor.fetchone() is None:
+                        cursor.execute("delete from issue_type where id=%s", [publication_fks['issue_type_id']])
+
+                    return HttpResponse('Publication %s successfully removed' % publication_id)
+                except KeyError:
                     # No such publication. Really!
                     raise Http404("No such publication")
-            except:
+            except ValueError:
                 return HttpResponseBadRequest('')
         # go authorize first, maaaan
         else:
             return redirect('authentication')
 
     # go authorize first, maaaan
-    except NotAuthenticatedException:
+    except (NotAuthenticatedException, KeyError):
         return redirect('authentication')
