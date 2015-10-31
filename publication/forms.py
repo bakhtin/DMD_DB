@@ -1,0 +1,21 @@
+from django import forms
+
+class PubAdditionForm(forms.Form):
+    title = forms.CharField(max_length=1023, required=True)
+    issn = forms.CharField(max_length=9, required=False)
+    isbn = forms.CharField(max_length=13, required=False)
+    doi = forms.CharField(max_length=31, required=True)
+    pubdate = forms.DateField(required=False)
+    pages = forms.CharField(max_length=20, required=False)
+    volume = forms.IntegerField(required=False)
+    abstract = forms.CharField(widget=forms.Textarea, required=False)
+    url = forms.URLField(required=False)
+    pub_number = forms.CharField(max_length=45, required=False)
+    issue_name = forms.CharField(max_length=512, required=True)
+    issue_type = forms.CharField(max_length=254, required=True)
+    affiliation = forms.CharField(max_length=512, required=True)
+    publisher = forms.CharField(max_length=45, required=True)
+    authors = forms.CharField(widget=forms.Textarea, required=True)
+    thesaurus_terms_keywords = forms.CharField(widget=forms.Textarea, required=True)
+    controlled_terms_keywords = forms.CharField(widget=forms.Textarea, required=True)
+    uncontrolled_terms_keywords = forms.CharField(widget=forms.Textarea, required=True)

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Publication data</h2>
+    <a class="btn btn-default" href="{% url "publication_edit" publications.id %}">[EDIT]</a>
+    <form action="{% url "publication_delete" %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="publication_id" value="{{ publications.id }}">
+        <input class="btn btn-default" type="submit" value="[DELETE]">
+    </form>
+<ul>
+{% for field_name, value in publications.items %}
+    {% if field_name == "url" %}
+        <li>{{ field_name }}: <a href="{{ value }}">{{ value }}</a></li>
+    {% else %}
+        <li>{{ field_name }}: {{ value }}</li>
+    {% endif %}
+{% endfor %}
+</ul>
+
+<h2>Authors</h2>
+<ul>
+{% for author in publication_authors %}
+    <li><a href="{% url "show_author_page_base" author.author_id%}">{{ author.name }}</a></li>
+{% endfor %}
+</ul>
+
+<h2>Keywords</h2>
+{% for type, keywords in publication_keywords.items %}
+    {% if type == "controlledterms" %}
+        <h4>Controlled terms</h4>
+        {% elif type == "thesaurusterms" %}
+        <h4>Thesaurus terms</h4>
+        {% elif type == "uncontrolledterms" %}
+        <h4>Uncontrolled terms</h4>
+    {% endif %}
+    <ul>
+    {% for keyword in keywords %}
+        <li>{{ keyword }}</li>
+    {% endfor %}
+    </ul>
+{% endfor %}
+<h2>Related publications:</h2>
+<ul>
+{% for relevant_publication in relevant_pubs %}
+    <li><a href="{% url 'show_publication_detail' relevant_publication.id %}">{{ relevant_publication.title }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

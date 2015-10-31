@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block content %}
+    <form method="POST" action="">
+        {% csrf_token %}
+        <div class="search_form">
+            <div id="search_criteria" class="search_criteria">
+                <span>
+                    {{ search_form.operator }}{{ search_form.search_field }}{{ search_form.criteria }}{{ search_form.match }}
+                </span>
+            </div>
+        </div>
+        <button class="btn btn-default" id="add_more" type="button">Add more</button>
+        <input type="submit" value="Search">
+    </form>
+{% endblock %}
+{% block tail %}
+    <script>
+        $("#add_more").on("click", function () {
+            $("#search_criteria").clone().appendTo(".search_form");
+
+            if ($('.search_criteria').length > 1) {
+                $('.search_criteria:last-child').append('<button class="btn btn-default remove" type="button">Remove</button>');
+                console.log($('.search_criteria').length);
+            }
+
+        });
+
+        $(document).on('click','.remove' , function(e){
+             console.log("click");
+            $(this).parent().remove();
+        });
+
+    </script>
+{% endblock %}

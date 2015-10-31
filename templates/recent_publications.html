@@ -1,0 +1,6 @@
+<h4>Recently added publications:</h4>
+<ul>
+{% for publication in recent_publications %}
+     <li><a href="{% url 'show_publication_detail' publication.id %}">{{ publication.title }}</a></li>
+{% endfor %}
+</ul>
