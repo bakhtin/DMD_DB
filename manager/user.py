@@ -29,9 +29,9 @@ def authenticate(user_login, password):
                 session_id = base64.b64encode(hashers.make_password(a.read(32), hasher='unsalted_md5') + ':' + str(user_id))
 
                 cursor.execute("select user_id from session WHERE user_id=%s", [user_id])
-                if cursor.fetchall == '':
+                if len(cursor.fetchall()) == 0:
                     cursor.execute("insert into session(session_id, user_id, expire_time) values(%s, %s, %s)",
-                                   [session_id, user_id, expire_time, session_id])
+                                   [session_id, user_id, expire_time])
                 else:
                     cursor.execute("update session set session_id=%s, expire_time=%s", [session_id, expire_time])
                     # return session_id string to set user's cookie

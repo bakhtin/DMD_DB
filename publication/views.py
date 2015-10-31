@@ -881,6 +881,20 @@ def search_publication(request):
                                           {'recent_publications': recent_publications,
                                            'search_form': search_form},
                                           context_instance=RequestContext(request))
+
+            # POST
+            else:
+                if all(key in request.POST for key in ['criteria', 'match', 'operator', 'search_field']) \
+                        and len(request.POST.getlist('criteria')) == len(request.POST.getlist('match')) == \
+                                len(request.POST.getlist('operator')) == len(request.POST.getlist('search_field')):
+                        query_params = {'criteria': request.POST.getlist('criteria'),
+                                        'match': request.POST.getlist('match'),
+                                        'operator': request.POST.getlist('operator'),
+                                        'search_field': request.POST.getlist('search_field')}
+                        query = query_builder(**query_params)
+                        return
+                else:
+                    raise HttpResponseBadRequest
         # go authorize first, maaaan
         else:
             return redirect('authentication')
