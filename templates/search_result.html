@@ -1,10 +1,27 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
+    {% if error_message %}
+        {{ error_message }}
+    {% elif search_results %}
+        <ul>
+            {% for publication in search_results %}
+                <h4>Title</h4>
+                {{ publication.title }}
+                <h4>Abstract</h4>
+                {{ publication.abstract }}
+            {% endfor %}
+        </ul>
+        {% if curr_page > 1 %}
+            <form>
+            {% csrf_token %}
+            <input type="hidden" name="page" value="{{ curr_page|add:"-1" }}">
+            <input type="hidden" name="limit" value="5">
+            </form>
 
-</body>
-</html>
+        {% endif %}
+        {% if next_page > 0 %}
+            <a href="{% url 'show_author_page_base' authors.0.a_id %}/page/{{ next_page }}/limit/10/">Next page >></a>
+        {% endif %}
+    {% endif %}
+
+{% endblock %}

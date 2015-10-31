@@ -18,7 +18,8 @@ from django.contrib import admin
 import views, publication.views, author.views, manager.views
 
 urlpatterns = [
-    url(r'^$', publication.views.search_publication),
+    url(r'^$', publication.views.index, name='index'),
+    url(r'^search/', publication.views.publication_search, name='publication_search'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^publication/publication_id/([0-9]+)', publication.views.publication_full, name='show_publication_detail'),
     url(r'^author/author_id/([0-9]+)/page/([0-9]+)/limit/([0-9]+)', author.views.related_articles),
@@ -29,6 +30,4 @@ urlpatterns = [
     url(r'^publication/add/', publication.views.publication_add, name='publication_add'),
     url(r'^publication/edit/([0-9]+)/', publication.views.publication_edit, name='publication_edit'),
     url(r'^publication/delete/', publication.views.publication_delete, name='publication_delete'),
-
-
 ]
