@@ -1,5 +1,6 @@
 from django import forms
 
+
 class PubAdditionForm(forms.Form):
     title = forms.CharField(max_length=1023, required=True)
     issn = forms.CharField(max_length=9, required=False)
@@ -19,3 +20,11 @@ class PubAdditionForm(forms.Form):
     thesaurus_terms_keywords = forms.CharField(widget=forms.Textarea, required=True)
     controlled_terms_keywords = forms.CharField(widget=forms.Textarea, required=True)
     uncontrolled_terms_keywords = forms.CharField(widget=forms.Textarea, required=True)
+
+
+class SearchForm(forms.Form):
+    operator = forms.ChoiceField(choices=[(x.lower(), x) for x in ['AND', 'OR', 'NOT']])
+    search_field = forms.CharField(min_length=3, max_length=1024)
+    criteria = forms.ChoiceField(choices=[(x.lower(), x) for x in ['Title', 'Author', 'Keyword', 'Issue name',
+                                                                   'Affiliation', 'Publication year']])
+    match = forms.ChoiceField(choices=[(x.lower(), x) for x in ['EXACT', 'LIKE']])
