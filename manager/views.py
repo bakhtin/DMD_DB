@@ -22,3 +22,9 @@ def do_authenticate(request):
             return render_to_response('login.html', {'login_form': login_form,
                                                      'message': message},
                               context_instance=RequestContext(request))
+
+@require_http_methods(['POST'])
+def do_logout(request):
+    if 'session_id' in request.COOKIES:
+        deauthenticate(request.COOKIES['session_id'])
+        return redirect('/')
