@@ -12,16 +12,65 @@
             {% endfor %}
         </ul>
         {% if curr_page > 1 %}
-            <form>
-            {% csrf_token %}
-            <input type="hidden" name="page" value="{{ curr_page|add:"-1" }}">
-            <input type="hidden" name="limit" value="5">
+            <form method="POST" action="/search/">
+                {% csrf_token %}
+                {% for k, v in query_params.items %}
+                    {% if k == "criteria" %}
+                        {% for item in v %}
+                            <input type="hidden" name="criteria" value="{{ item }}">
+                        {% endfor %}
+                    {% endif %}
+                    {% if k == "match" %}
+                        {% for item in v %}
+                            <input type="hidden" name="match" value="{{ item }}">
+                        {% endfor %}
+                    {% endif %}
+                    {% if k == "operator" %}
+                        {% for item in v %}
+                            <input type="hidden" name="operator" value="{{ item }}">
+                        {% endfor %}
+                    {% endif %}
+                    {% if k == "search_field" %}
+                        {% for item in v %}
+                            <input type="hidden" name="search_field" value="{{ item }}">
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+                <input type="hidden" name="page" value="{{ curr_page|add:"-1" }}">
+                <input type="hidden" name="limit" value="5">
+                <input type="submit" value="Previous page">
             </form>
-
         {% endif %}
+
         {% if next_page > 0 %}
-            <a href="{% url 'show_author_page_base' authors.0.a_id %}/page/{{ next_page }}/limit/10/">Next page >></a>
+                <form method="POST" action="/search/">
+                {% csrf_token %}
+                {% for k, v in query_params.items %}
+                    {% if k == "criteria" %}
+                        {% for item in v %}
+                            <input type="hidden" name="criteria" value="{{ item }}">
+                        {% endfor %}
+                    {% endif %}
+                    {% if k == "match" %}
+                        {% for item in v %}
+                            <input type="hidden" name="match" value="{{ item }}">
+                        {% endfor %}
+                    {% endif %}
+                    {% if k == "operator" %}
+                        {% for item in v %}
+                            <input type="hidden" name="operator" value="{{ item }}">
+                        {% endfor %}
+                    {% endif %}
+                    {% if k == "search_field" %}
+                        {% for item in v %}
+                            <input type="hidden" name="search_field" value="{{ item }}">
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+                <input type="hidden" name="page" value="{{ next_page }}">
+                <input type="hidden" name="limit" value="5">
+                <input type="submit" value="Next page">
+            </form>
         {% endif %}
     {% endif %}
-
 {% endblock %}

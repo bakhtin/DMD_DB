@@ -914,7 +914,7 @@ def publication_search(request):
                                 'operator': request.POST.getlist('operator'),
                                 'search_field': request.POST.getlist('search_field')}
                 query = query_builder(**query_params)
-                connection.escape_string(query)
+                # connection.escape_string(query)
                 cursor.execute("%s limit %s, %s" % (str(query), start + limit, 1))
                 if len(cursor.fetchall()) > 0:
                     next_page = page + 1
@@ -931,14 +931,15 @@ def publication_search(request):
                 else:
                     publication_info = []
                     for res in search_results:
-                        cursor.execute("select id, title, abstract from publication where id=%s", [res[0]])
+                        cursor.execute("select id, title, abstract, pubdate from publication where id=%s", [res[0]])
                         publication_info.append(dictfetchall(cursor)[0])
                     search_results = publication_info
 
                 return render_to_response('search_result.html', {'search_results': search_results,
                                                                  'error_message': error_message,
                                                                  'next_page': next_page,
-                                                                 'curr_page': page},
+                                                                 'curr_page': page,
+                                                                 'query_params': query_params},
                                           context_instance=RequestContext(request))
 
             else:
