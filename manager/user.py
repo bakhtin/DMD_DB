@@ -33,7 +33,7 @@ def authenticate(user_login, password):
                     cursor.execute("insert into session(session_id, user_id, expire_time) values(%s, %s, %s)",
                                    [session_id, user_id, expire_time])
                 else:
-                    cursor.execute("update session set session_id=%s, expire_time=%s", [session_id, expire_time])
+                    cursor.execute("update session set session_id=%s, expire_time=%s where user_id=%s", [session_id, expire_time, user_id])
                     # return session_id string to set user's cookie
                 return session_id
         except:
