@@ -84,7 +84,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         # 'ENGINE': 'doj.db.backends.mysql',
-        'HOST': '',
+        'HOST': '10.0.0.2',
         'NAME': 'dmd_db',
         'USER': 'dmd',
         'PASSWORD': '500000',
