@@ -13,7 +13,9 @@
         <button class="btn btn-default" id="add_more" type="button">Add more</button>
         <input type="submit" value="Search">
     </form>
+    {% include "recent_publications.html" %}
 {% endblock %}
+
 {% block tail %}
     <script>
         $("#add_more").on("click", function () {
