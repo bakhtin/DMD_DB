@@ -1,7 +1,7 @@
 package core.parse;
 
 import core.sys.Page;
-import core.sys.Pager;
+import core.sys.PageManager;
 import org.junit.Test;
 
 /**
@@ -12,7 +12,7 @@ import org.junit.Test;
 public class TestParse {
     @Test
     public void testParse() throws Exception {
-        Pager p = new Pager("huidb");
+        PageManager p = new PageManager("huidb");
         Page q = p.readPage(5);
     }
 }

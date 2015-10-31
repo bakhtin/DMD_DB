@@ -16,7 +16,7 @@ public class PaginationTest {
     public void testPageRead(){
         File f = new File("huidb");
         f.delete();
-        Pager pager = new Pager("huidb");
+        PageManager pager = new PageManager("huidb");
 
         long start1;
         long start2;

@@ -9,12 +9,10 @@ import java.nio.ByteBuffer;
  */
 public class Misc {
     public static String parseStr(ByteBuffer b) {
-        int len = b.getInt();
-        Character[] str = new Character[len];
-        for (int i = 0; i < len; i++) {
-            str[i] = b.getChar();
-        }
-        return String.valueOf(str);
+        short len = b.getShort();
+        byte [] str = new byte[len];
+        b.get(str);
+        return new String(str);
     }
 
     public static byte[] parseBytes(ByteBuffer b, int length) {
@@ -30,10 +28,9 @@ public class Misc {
      * @param s
      */
     public static void addStr(ByteBuffer b, String s) {
-        b.putInt(s.length());
-        for (int i = 0; i < s.length(); i++) {
-            b.putChar(s.charAt(i));
-        }
+        byte[] str = s.getBytes();
+        b.putShort((short)str.length);
+        b.put(str);
     }
 
 }

@@ -1,4 +1,4 @@
-package core.sys.table;
+package core.sys.tabledescriptor;
 
 import core.sys.parse.Misc;
 
@@ -9,10 +9,10 @@ import java.nio.ByteBuffer;
  *         Innopolis University
  * @date 10/23/2015
  */
-public class Attribute {
+class Attribute {
     public static byte F_NN = 1;        // not null.      If set -- raise an exception while inserting null
     public static byte F_PK = 2;        // primary key.   If set -- attribute is Not Null and AutoIncrement
-    public static byte F_FK = 4;        // foreign key.   If set -- it points to the table name|attribute name
+    public static byte F_FK = 4;        // foreign key.   If set -- it points to the tabledescriptor name|attribute name
     public static byte F_DV = 8;        // default value. If set -- defaultValue is set
     public static byte F_UQ = 16;       // unique value
     public static byte F_AI = 32;       // auto increment
@@ -35,12 +35,17 @@ public class Attribute {
     byte[] defaultValue;
 
     /**
-     * Present ONLU if flag F_FK is present!
+     * Present ONLY if flag F_FK is present!
      * tablename|attributename
      */
-    String foreignKey;
+    String fk_tbl_name;
+    String fk_attr_name;
 
     public void setFlag(int flag) {
+        // if flag = PK, then it has to be Not Null and AutoIncrement
+        if (flag == F_PK) flag |= F_NN | F_AI;
+        if (flag == F_FK || flag == F_DV || flag == F_UQ) flag |= F_NN;
+
         this.flags = (byte) (flags | flag);
     }
 
@@ -53,31 +58,32 @@ public class Attribute {
     }
 
 
-    public byte[] serialize() {
-        ByteBuffer buf;
-        // initial capacity: name, byte for type and byte for flags
-        int capacity = 4 + name.length() + 1 + 1;
+    public ByteBuffer serialize() {
+        byte[] name = this.name.getBytes();
+        byte[] fk_tbl_name = this.fk_tbl_name.getBytes();
+        byte[] fk_attr_name = this.fk_attr_name.getBytes();
+        int size = 2 + name.length + 1 + 1 + defaultValue.length + 2 + fk_tbl_name.length + 2 + fk_attr_name.length;
 
-        if (hasFlag(F_DV))
-            capacity += 4 + defaultValue.length;
-        if (hasFlag(F_FK))
-            capacity += 4 + foreignKey.length();
 
-        buf = ByteBuffer.allocate(capacity);
+        ByteBuffer buf = ByteBuffer.allocate(size);
+        // put name
+        buf.putShort((short)name.length);
+        buf.put(name);
 
-        Misc.addStr(buf, name);
         buf.put(type);
         buf.put(flags);
 
-        if (hasFlag(F_DV)) {
-            buf.putInt(defaultValue.length);
-            buf.put(defaultValue);
-        }
-        if (hasFlag(F_FK)) {
-            Misc.addStr(buf, foreignKey);
+        buf.put(defaultValue);
+
+        if( (flags & F_FK) != 0){
+            // put fk
+            buf.putShort((short)fk_tbl_name.length);
+            buf.put(fk_tbl_name);
+            buf.putShort((short)fk_attr_name.length);
+            buf.put(fk_attr_name);
         }
 
-        return buf.array();
+        return buf;
     }
 
     public static Attribute deserialize(ByteBuffer b) {
@@ -86,13 +92,9 @@ public class Attribute {
         a.type = b.get();
         a.flags = b.get();
 
-        if (a.hasFlag(F_DV)) {
-            int length = b.getInt();
-            a.defaultValue = Misc.parseBytes(b, length);
-        }
-
-        if (a.hasFlag(F_FK)) {
-            a.foreignKey = Misc.parseStr(b);
+        if( (a.flags & F_FK) != 0){
+            a.fk_tbl_name = Misc.parseStr(b);
+            a.fk_attr_name = Misc.parseStr(b);
         }
 
         return a;

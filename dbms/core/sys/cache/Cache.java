@@ -1,9 +1,11 @@
 package core.sys.cache;
 
 import core.sys.Page;
-import core.sys.Pager;
+import core.sys.PageManager;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * @author Bogdan Vaneev
@@ -11,11 +13,33 @@ import java.io.IOException;
  *         10/24/2015
  */
 public class Cache {
-    private static int cacheSize = 512;
-    private CachedPage[] table = new CachedPage[cacheSize];
-    private int pointer = 0;
+    private static int cacheSize = 2048;
+    private HashMap<Integer, Page> map = new HashMap<>(cacheSize, 1);
+    private TreeMap<Integer, LRU> used = new TreeMap<>();
+
     private String path;
-    private Pager pager;
+    private PageManager pager;
+
+    private class LRU implements Comparable<Long> {
+        Long timestamp = 0L;
+        long counter = 0L;
+        int pnumber;
+
+        void use() {
+            counter++;
+            timestamp = System.nanoTime();
+        }
+
+        LRU(int n) {
+            pnumber = n;
+            this.use();
+        }
+
+        @Override
+        public int compareTo(Long o) {
+            return timestamp.compareTo(o);
+        }
+    }
 
     // statistics
     private Long hit = 0L;
@@ -24,9 +48,8 @@ public class Cache {
 
     public Cache(String p) {
         this.path = p;
-        pager = new Pager(path);
+        pager = new PageManager(path);
     }
-
 
     public Double hitRate() {
         return ((double) hit / (hit + miss));
@@ -39,36 +62,20 @@ public class Cache {
      * @return - Page
      */
     public Page get(Integer n) {
-        // look for a page in the table
-        Integer min = Integer.MAX_VALUE;
-        Integer index = 0;
-        for (int i = 0; i < cacheSize; i++) {
-            // find the place for future page if miss by discipline LRU
-            if (table[i] == null || table[i].used <= min) {
-                if (table[i] != null) min = table[i].used;
-                index = i;
-            }
-
-            if (table[i] == null) break;
-
-            if (table[i] != null && table[i].getNumber().equals(n)) {                        // hit
-                hit++;
-                table[i].use();
-                return table[i].getPage();
+        if (map.containsKey(n)) {
+            hit++;
+            used.get(n).use();
+            return map.get(n);
+        }else{
+            miss++;
+            // FIXIT/TODO
+            try {
+                return pager.readPage(n);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
-
-        miss++;                                                                              // miss
-        try {
-            Page p = pager.readPage(n);
-            table[index] = new CachedPage(p);
-            table[index].use();
-            return p;
-        } catch (IOException e) {
-            // check for correctness of input argument of readPage
-            e.printStackTrace();
-            return null;
-        }
+        return null;
     }
 
     /**
@@ -77,10 +84,9 @@ public class Cache {
      * @param p - Page
      */
     public void write(Page p) {
+        map.put(p.getNumber(), p);
+        used.put(p.getNumber(), new LRU(p.getNumber()));
         try {
-            for (int i = 0; i < cacheSize; i++) {
-                if (table[i] != null & table[i].getNumber() == p.getNumber()) table[i].page = p;
-            }
             pager.writePage(p);
         } catch (IOException e) {
             e.printStackTrace();

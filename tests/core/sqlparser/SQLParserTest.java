@@ -92,14 +92,14 @@ public class SQLParserTest {
                 TJoin join = pStmt.joins.getJoin(i);
                 switch (join.getKind()){
                     case TBaseType.join_source_fake:
-                        System.out.printf("\ntable: \n\t%s, alias: %s\n",join.getTable().toString(),(join.getTable().getAliasClause() !=null)?join.getTable().getAliasClause().toString():"");
+                        System.out.printf("\ntabledescriptor: \n\t%s, alias: %s\n",join.getTable().toString(),(join.getTable().getAliasClause() !=null)?join.getTable().getAliasClause().toString():"");
                         break;
                     case TBaseType.join_source_table:
-                        System.out.printf("\ntable: \n\t%s, alias: %s\n",join.getTable().toString(),(join.getTable().getAliasClause() !=null)?join.getTable().getAliasClause().toString():"");
+                        System.out.printf("\ntabledescriptor: \n\t%s, alias: %s\n",join.getTable().toString(),(join.getTable().getAliasClause() !=null)?join.getTable().getAliasClause().toString():"");
                         for(int j=0;j<join.getJoinItems().size();j++){
                             TJoinItem joinItem = join.getJoinItems().getJoinItem(j);
                             System.out.printf("Join type: %s\n",joinItem.getJoinType().toString());
-                            System.out.printf("table: %s, alias: %s\n",joinItem.getTable().toString(),(joinItem.getTable().getAliasClause() !=null)?joinItem.getTable().getAliasClause().toString():"");
+                            System.out.printf("tabledescriptor: %s, alias: %s\n",joinItem.getTable().toString(),(joinItem.getTable().getAliasClause() !=null)?joinItem.getTable().getAliasClause().toString():"");
                             if (joinItem.getOnCondition() != null){
                                 System.out.printf("On: %s\n",joinItem.getOnCondition().toString());
                             }else  if (joinItem.getUsingColumns() != null){
@@ -109,12 +109,12 @@ public class SQLParserTest {
                         break;
                     case TBaseType.join_source_join:
                         TJoin source_join = join.getJoin();
-                        System.out.printf("\ntable: \n\t%s, alias: %s\n",source_join.getTable().toString(),(source_join.getTable().getAliasClause() !=null)?source_join.getTable().getAliasClause().toString():"");
+                        System.out.printf("\ntabledescriptor: \n\t%s, alias: %s\n",source_join.getTable().toString(),(source_join.getTable().getAliasClause() !=null)?source_join.getTable().getAliasClause().toString():"");
 
                         for(int j=0;j<source_join.getJoinItems().size();j++){
                             TJoinItem joinItem = source_join.getJoinItems().getJoinItem(j);
                             System.out.printf("source_join type: %s\n",joinItem.getJoinType().toString());
-                            System.out.printf("table: %s, alias: %s\n",joinItem.getTable().toString(),(joinItem.getTable().getAliasClause() !=null)?joinItem.getTable().getAliasClause().toString():"");
+                            System.out.printf("tabledescriptor: %s, alias: %s\n",joinItem.getTable().toString(),(joinItem.getTable().getAliasClause() !=null)?joinItem.getTable().getAliasClause().toString():"");
                             if (joinItem.getOnCondition() != null){
                                 System.out.printf("On: %s\n",joinItem.getOnCondition().toString());
                             }else  if (joinItem.getUsingColumns() != null){
@@ -125,7 +125,7 @@ public class SQLParserTest {
                         for(int j=0;j<join.getJoinItems().size();j++){
                             TJoinItem joinItem = join.getJoinItems().getJoinItem(j);
                             System.out.printf("Join type: %s\n",joinItem.getJoinType().toString());
-                            System.out.printf("table: %s, alias: %s\n",joinItem.getTable().toString(),(joinItem.getTable().getAliasClause() !=null)?joinItem.getTable().getAliasClause().toString():"");
+                            System.out.printf("tabledescriptor: %s, alias: %s\n",joinItem.getTable().toString(),(joinItem.getTable().getAliasClause() !=null)?joinItem.getTable().getAliasClause().toString():"");
                             if (joinItem.getOnCondition() != null){
                                 System.out.printf("On: %s\n",joinItem.getOnCondition().toString());
                             }else  if (joinItem.getUsingColumns() != null){

@@ -9,14 +9,14 @@ import java.nio.ByteBuffer;
  *         Innopolis University
  *         10/22/2015
  */
-public class Pager {
+public class PageManager {
     private String path;
     private RandomAccessFile file;
 
     private int totalPages = 0;
 
 
-    public Pager(String path) {
+    public PageManager(String path) {
         this.path = path;
         try {
             file = new RandomAccessFile(path, "rw");
