@@ -3,10 +3,20 @@
     {% if error_message %}
         {{ error_message }}
     {% else %}
+        <div class="container" role="main">
         <form method="POST" action="">
+            <h4>Edit publication:</h4>
             {% csrf_token %}
-            {{ edit_form.as_p }}
-            <input type="submit" value="Submit">
+            {% for v in edit_form %}
+                <div class="form-group {% if v.errors %}has-error{% endif %}">
+                    {{ v }}
+                    {{ v.errors }}
+                </div>
+                {% endfor %}
+            <button class="btn btn-primary btn-block" id="add_more" type="submit">
+                <i class="glyphicon glyphicon-plus"></i>
+                Save changes
+            </button>
         </form>
     {% endif %}
 {% endblock %}

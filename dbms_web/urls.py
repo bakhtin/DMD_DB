@@ -23,7 +23,7 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^publication/publication_id/([0-9]+)', publication.views.publication_full, name='show_publication_detail'),
     url(r'^author/author_id/([0-9]+)/page/([0-9]+)/limit/([0-9]+)', author.views.related_articles),
-    url(r'^author/author_id/([0-9]+)', author.views.related_articles, {'page': 1, 'limit': 10},
+    url(r'^author/author_id/([0-9]+)', author.views.related_articles, {'page': 1, 'limit': 6},
         name='show_author_page_base'),
     url(r'^login/', manager.views.do_authenticate, name='authentication'),
     url(r'^logout/', manager.views.do_logout, name='logout'),

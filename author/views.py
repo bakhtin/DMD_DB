@@ -45,15 +45,16 @@ def related_articles(request, author_id, page, limit):
                        "FROM publication AS p, (SELECT publication_id FROM publication_author"
                        " WHERE author_id=%s) AS t1,"
                        "(SELECT id, name FROM author WHERE id=%s) AS t2  "
-                       "WHERE t1.publication_id=p.id LIMIT 0, 10", [author_id, author_id])
+                       "WHERE t1.publication_id=p.id LIMIT 0, 6", [author_id, author_id])
             authors = dictfetchall(cursor)
         else:
             raise Http404("No such author_publication page")
 
         if authors:
-            return render_to_response('author_publicaion.html', {'authors': authors,
+            return render_to_response(['author_publicaion.html'], {'authors': authors,
                                                              'next_page': next_page,
-                                                             'curr_page': page},
+                                                             'curr_page': page,
+                                                             'is_authenticated': True},
                               context_instance=RequestContext(request))
         else:
             raise Http404("No such author_publication page")

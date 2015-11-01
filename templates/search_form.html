@@ -1,37 +1,103 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% block content %}
-    <form method="POST" action="/search/">
-        {% csrf_token %}
-        <div class="search_form">
-            <div id="search_criteria" class="search_criteria">
-                <span>
-                    {{ search_form.operator }}{{ search_form.search_field }}{{ search_form.criteria }}{{ search_form.match }}
-                </span>
+    <style>
+        .row {
+            margin-left: 0;
+            margin-right: 0;
+        }
+    </style>
+
+<div class="container">
+    <div class="jumbotron container">
+        <form method="POST" action="/search/">
+            {% csrf_token %}
+            <div class="search_form">
+                <div id="search_criteria" class="search_criteria row">
+                    <div class="form-group">
+                        <div class="form-group col-md-4">
+                            <label class="control-label" for="{{ search_form.search_field.id_for_label }}">Search
+                                field</label>
+                            {{ search_form.search_field }}
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label class="control-label"
+                                   for="{{ search_form.criteria.id_for_label }}">Criteria</label>
+                            {{ search_form.criteria }}
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label class="control-label" for="{{ search_form.match.id_for_label }}">Match</label>
+                            {{ search_form.match }}
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label class="control-label"
+                                   for="{{ search_form.operator.id_for_label }}">Operator</label>
+                            {{ search_form.operator }}
+                        </div>
+                        <div class="form-group col-md-2 ">
+                            <label style="opacity: 0;" class="control-label"
+                                   for="remove">Remove</label>
+                            <button class="form-control btn btn-block btn-danger remove" id="remove" type="button">
+                                <i class="glyphicon glyphicon-remove"></i>
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <button class="btn btn-default" id="add_more" type="button">Add more</button>
-        <input type="submit" value="Search">
-    </form>
-    {% include "recent_publications.html" %}
+            <div class="row">
+                <div class="col-xs-8 col-md-10">
+                    <button class="btn btn-primary btn-block" action="submit" value="Search">
+                        <i class="glyphicon glyphicon-search"></i>
+                        Search
+                    </button>
+                </div>
+                <div class="col-xs-4 col-md-2">
+                    <button class="btn btn-info btn-block" id="add_more" type="button">
+                        <i class="glyphicon glyphicon-plus"></i>
+                        Add criteria
+                    </button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% include "recent_publications.html" %}
 {% endblock %}
 
 {% block tail %}
-    <script>
-        $("#add_more").on("click", function () {
-            $("#search_criteria").clone().appendTo(".search_form");
+</div>
 
-            if ($('.search_criteria').length > 1) {
-                $('.search_criteria:last-child').append('<button class="btn btn-default remove" type="button">Remove</button>');
-                console.log($('.search_criteria').length);
+<script>
+    $(function(){
+        var alone_btn = $('.remove');
+        if(alone_btn.length <= 1){
+            alone_btn.addClass('disabled');
+        }
+
+        $(document).on('click', '.remove', function(){
+            var crit = $('.search_criteria');
+            if(crit.length <= 1){
+                $(this).addClass('disabled');
             }
+            else{
+                $("#search_criteria .remove").removeClass('disabled');
+                $(this).parent().parent().parent().remove();
 
+                var alone_btn = $('.remove');
+                if(alone_btn.length <= 1){
+                    alone_btn.addClass('disabled');
+                }
+            }
+        })
+
+        $(document).on("click", '#add_more', function () {
+            var crit = $("#search_criteria").clone();
+            $(crit).appendTo('.search_form');
+            $(".remove").removeClass('disabled');
         });
-
-        $(document).on('click','.remove' , function(e){
-             console.log("click");
-            $(this).parent().remove();
-        });
-
-    </script>
+    })
+</script>
 {% endblock %}

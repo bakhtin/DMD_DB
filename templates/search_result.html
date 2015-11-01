@@ -1,76 +1,97 @@
 {% extends "base.html" %}
 {% block content %}
-    {% if error_message %}
-        {{ error_message }}
-    {% elif search_results %}
-        <ul>
-            {% for publication in search_results %}
-                <h4>Title</h4>
-                {{ publication.title }}
-                <h4>Abstract</h4>
-                {{ publication.abstract }}
-            {% endfor %}
-        </ul>
-        {% if curr_page > 1 %}
-            <form method="POST" action="/search/">
-                {% csrf_token %}
-                {% for k, v in query_params.items %}
-                    {% if k == "criteria" %}
-                        {% for item in v %}
-                            <input type="hidden" name="criteria" value="{{ item }}">
-                        {% endfor %}
-                    {% endif %}
-                    {% if k == "match" %}
-                        {% for item in v %}
-                            <input type="hidden" name="match" value="{{ item }}">
-                        {% endfor %}
-                    {% endif %}
-                    {% if k == "operator" %}
-                        {% for item in v %}
-                            <input type="hidden" name="operator" value="{{ item }}">
-                        {% endfor %}
-                    {% endif %}
-                    {% if k == "search_field" %}
-                        {% for item in v %}
-                            <input type="hidden" name="search_field" value="{{ item }}">
-                        {% endfor %}
-                    {% endif %}
-                {% endfor %}
-                <input type="hidden" name="page" value="{{ curr_page|add:"-1" }}">
-                <input type="hidden" name="limit" value="5">
-                <input type="submit" value="Previous page">
-            </form>
-        {% endif %}
+{% if error_message %}
+<div class="container">
+    <div class="alert alert-danger" role="alert">{{ error_message }}</div>
+</div>
+{% elif search_results %}
 
-        {% if next_page > 0 %}
+<div class="container">
+    <div class="panel panel-default">
+        <div class="btn-group-justified" role="group">
+            <div class="btn-group" role="group">
+                {% if curr_page > 1 %}
                 <form method="POST" action="/search/">
-                {% csrf_token %}
-                {% for k, v in query_params.items %}
-                    {% if k == "criteria" %}
-                        {% for item in v %}
-                            <input type="hidden" name="criteria" value="{{ item }}">
-                        {% endfor %}
-                    {% endif %}
-                    {% if k == "match" %}
-                        {% for item in v %}
-                            <input type="hidden" name="match" value="{{ item }}">
-                        {% endfor %}
-                    {% endif %}
-                    {% if k == "operator" %}
-                        {% for item in v %}
-                            <input type="hidden" name="operator" value="{{ item }}">
-                        {% endfor %}
-                    {% endif %}
-                    {% if k == "search_field" %}
-                        {% for item in v %}
-                            <input type="hidden" name="search_field" value="{{ item }}">
-                        {% endfor %}
-                    {% endif %}
-                {% endfor %}
-                <input type="hidden" name="page" value="{{ next_page }}">
-                <input type="hidden" name="limit" value="5">
-                <input type="submit" value="Next page">
-            </form>
-        {% endif %}
+                    {% csrf_token %}
+                    {% for k, v in query_params.items %}
+                    {% for item in v %}
+                    <input type="hidden" name="{{ k }}" value="{{ item }}">
+                    {% endfor %}
+
+                    {% endfor %}
+                    <input type="hidden" name="page" value="{{ curr_page|add:" -1" }}">
+                    <input type="hidden" name="limit" value="6">
+
+                    <button class="btn btn-primary btn-block" type="submit" value="Previous page">
+                        <i class="glyphicon glyphicon-menu-left"></i>
+                        Previous page
+                    </button>
+                </form>
+                {% else %}
+                <button class="btn btn-primary disabled" type="submit" value="Previous page">
+                    <i class="glyphicon glyphicon-menu-left"></i>
+                    Previous page
+                </button>
+                {% endif %}
+            </div>
+
+
+            <a class="btn btn-primary disabled">Current page: {{ curr_page }}</a>
+
+
+            <div class="btn-group" role="group">
+                {% if next_page > 0 %}
+                <form method="POST" action="/search/">
+                    {% csrf_token %}
+                    {% for k, v in query_params.items %}
+                    {% for item in v %}
+                    <input type="hidden" name="{{ k }}" value="{{ item }}">
+                    {% endfor %}
+                    {% endfor %}
+                    <input type="hidden" name="page" value="{{ next_page }}">
+                    <input type="hidden" name="limit" value="6">
+
+                    <button class="btn btn-primary btn-block" type="submit" value="Previous page">
+                        Next page
+                        <i class="glyphicon glyphicon-menu-right"></i>
+                    </button>
+                </form>
+                {% else %}
+                <button class="btn btn-primary btn-block disabled" type="submit" value="Previous page">
+                    Next page
+                    <i class="glyphicon glyphicon-menu-right"></i>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container row">
+        {% for publication in search_results %}
+        <div class="col-sm-6 col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title" style="height:50px;">
+                        <a href="{% url 'show_publication_detail' publication.id %}">
+                            {{ publication.title | truncatechars:90 }}
+                        </a>
+                    </h4>
+
+                </div>
+                <p class="text-justify panel-body" style="min-height:170px;">
+                    {{ publication.abstract | truncatechars:200 }}
+                </p>
+
+                <div class="panel-footer text-right">
+                    <a href="{% url 'show_publication_detail' publication.id %}">Details...</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
     {% endif %}
+
+</div>
+
 {% endblock %}

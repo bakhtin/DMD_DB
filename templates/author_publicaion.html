@@ -1,23 +1,58 @@
 {% extends "base.html" %}
 {% block content %}
-    <h3>{{ authors.0.name }}</h3>
-    <div id="pub_author">
-        {% for author in authors %}
-            <div>
-                <h3>Title</h3>
-                {{ author.title }}
-                <h3>Abstract</h3>
-                {{ author.abstract }}
-                <a href="{% url 'show_publication_detail' author.publication_id %}">Details</a>
-            </div>
-        {% endfor %}
+<div class="container">
+    <div class="jumbotron">
+        <div class="panel-body text-center page-header">
+            <h2 id="title"> {{ authors.0.name }}
+                <small>'s publications</small>
+            </h2>
+        </div>
     </div>
-    {% if curr_page > 1 %}
-        <a href="{% url 'show_author_page_base' authors.0.a_id %}/page/{{ curr_page|add:"-1" }}/limit/10/"><< Previous page </a>
-    {% endif %}
-    {% if next_page > 0 %}
-        <a href="{% url 'show_author_page_base' authors.0.a_id %}/page/{{ next_page }}/limit/10/">Next page >></a>
-    {% endif %}
+</div>
 
+<div class="container">
 
+    <div class="panel">
+        <div class="btn-group-justified" role="group">
+            <div class="btn-group" role="group">
+                {% if curr_page > 1 %}
+                <a class="btn btn-primary" href="{% url 'show_author_page_base' authors.0.a_id %}/page/{{ curr_page|add:"-1" }}/limit/6/">Previous page</a>
+                {% else %}
+                <a class="btn btn-primary disabled" href="{% url 'show_author_page_base' authors.0.a_id %}/page/{{ curr_page|add:"-1" }}/limit/6/">Previous page</a>
+                {% endif %}
+            </div>
+            <a class="btn btn-primary disabled">Current page: {{ curr_page }}</a>
+            <div class="btn-group" role="group">
+                {% if next_page > 0 %}
+                <a class="btn btn-primary" href="{% url 'show_author_page_base' authors.0.a_id %}/page/{{ next_page }}/limit/6/">Next page</a>
+                {% else %}
+                <a class="btn btn-primary disabled" href="{% url 'show_author_page_base' authors.0.a_id %}/page/{{ next_page }}/limit/6/">Next page</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% for author in authors %}
+    <div class="col-sm-6 col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title" style="height:50px;">
+                    <a href="{% url 'show_publication_detail' author.publication_id %}">
+                        {{ author.title | truncatechars:90 }}
+                    </a>
+                </h4>
+
+            </div>
+            <p class="text-justify panel-body" style="min-height:170px;">
+                {{ author.abstract | truncatechars:200 }}
+            </p>
+
+            <div class="panel-footer text-right">
+                <a href="{% url 'show_publication_detail' author.publication_id %}">Details...</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
 {% endblock %}

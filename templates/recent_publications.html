@@ -1,6 +1,21 @@
-<h4>Recently added publications:</h4>
-<ul>
-{% for publication in recent_publications %}
-     <li><a href="{% url 'show_publication_detail' publication.id %}">{{ publication.title }}</a></li>
-{% endfor %}
-</ul>
+<div class="row">
+    <ul class="container">
+        {% for publication in recent_publications %}
+        <div class="col-sm-6 col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title" style="height:50px;">
+                        <a href="{% url 'show_publication_detail' publication.id %}">{{ publication.title | truncatechars:90 }}</a>
+                    </h4>
+
+                </div>
+                <p class="text-justify panel-body" style="min-height:170px;">{{ publication.abstract | truncatechars:200 }}</p>
+
+                <div class="panel-footer text-right">
+                    <a href="{% url 'show_publication_detail' publication.id %}">Details...</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </ul>
+</div>

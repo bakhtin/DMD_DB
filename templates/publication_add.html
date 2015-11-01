@@ -3,10 +3,21 @@
     {% if error_message %}
         {{ error_message }}
     {% else %}
-<form method="POST" action="">
-    {% csrf_token %}
-    {{ add_form.as_p }}
-    <input type="submit" value="Submit">
-</form>
+        <div class="container" role="main">
+            <form method="POST" action="">
+                <h4>Add new publication:</h4>
+                {% csrf_token %}
+                {% for v in add_form %}
+                <div class="form-group {% if v.errors %}has-error{% endif %}">
+                    {{ v }}
+                    {{ v.errors }}
+                </div>
+                {% endfor %}
+                <button class="btn btn-primary btn-block" id="add_more" type="submit">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    Add publication
+                </button>
+            </form>
+        </div>
     {% endif %}
 {% endblock %}

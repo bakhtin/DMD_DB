@@ -1,28 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
- 
+
 <div class="container">
     <div class="form-group">
         <form class="row form-signin col-xs-12 col-sm-6 col-sm-offset-3 col-md-6 col-md-offset-3 "
               method="POST">
             {% csrf_token %}
+
             <h2 class="form-signin-heading">Please sign in</h2>
- 
+
             <div class="input-group">
                 <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
                 {{ login_form.login }}
             </div>
- 
+
             <div class="input-group">
                 <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
                 {{ login_form.password }}
             </div>
- 
+
             <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
         </form>
-        {% if message %}
-            {{ message }}
-        {% endif %}
     </div>
 </div>
+{% if message %}
+{{ message }}
+{% endif %}
 {% endblock %}
+

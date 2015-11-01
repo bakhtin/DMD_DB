@@ -34,15 +34,21 @@ def query_builder(**kwargs):
             from_tables.add('author')
             from_tables.add('publication_author')
             if k['operator'] in ['and', 'or']:
-                if attrs:
-                    attrs.append('%s author.name="%s"' % (k['operator'], k['search_field']))
+                if k['match'] == 'exact':
+                    if attrs:
+                        attrs.append('%s author.name="%s"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('author.name="%s"' % k['search_field'])
                 else:
-                    attrs.append('author.name="%s"' % k['search_field'])
+                    if attrs:
+                        attrs.append('%s author.name like "%%%s%%"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('author.name like "%%%s%%"' % k['search_field'])
             else:
                 if attrs:
-                    attrs.append('author.name!="%s"' % k['search_field'])
-                else:
                     attrs.append('AND author.name!="%s"' % k['search_field'])
+                else:
+                    attrs.append('author.name!="%s"' % k['search_field'])
             join_tables.add(' AND author.id=publication_author.author_id')
             cross_join_tables.add('publication_author.publication_id')
 
@@ -50,10 +56,16 @@ def query_builder(**kwargs):
             from_tables.add('keyword')
             from_tables.add('publication_keyword')
             if k['operator'] in ['and', 'or']:
-                if attrs:
-                    attrs.append('%s keyword.word="%s"' % (k['operator'], k['search_field']))
+                if k['match'] == 'exact':
+                    if attrs:
+                        attrs.append('%s keyword.word="%s"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('keyword.word="%s"' % k['search_field'])
                 else:
-                    attrs.append('keyword.word="%s"' % k['search_field'])
+                    if attrs:
+                        attrs.append('%s keyword.word like "%%%s%%"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('keyword.word like "%%%s%%"' % k['search_field'])
             else:
                 if attrs:
                     attrs.append('keyword.word!="%s"' % k['search_field'])
@@ -62,14 +74,20 @@ def query_builder(**kwargs):
             join_tables.add('AND keyword.id=publication_keyword.keyword_id')
             cross_join_tables.add('publication_keyword.publication_id')
 
-        elif k['criteria'] == 'issue_name':
+        elif k['criteria'] == 'issue name':
             from_tables.add('issue_name')
             from_tables.add('publication')
             if k['operator'] in ['and', 'or']:
-                if attrs:
-                    attrs.append('%s issue_name.name="%s"' % (k['operator'], k['search_field']))
+                if k['match'] == 'exact':
+                    if attrs:
+                        attrs.append('%s issue_name.name="%s"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('issue_name.name="%s"' % k['search_field'])
                 else:
-                    attrs.append('issue_name.name="%s"' % k['search_field'])
+                    if attrs:
+                        attrs.append('%s issue_name.name like "%%%s%%"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('issue_name.name like "%%%s%%"' % k['search_field'])
             else:
                 if attrs:
                     attrs.append('AND issue_name.name!="%s"' % k['search_field'])
@@ -78,14 +96,20 @@ def query_builder(**kwargs):
             join_tables.add('AND issue_name.id=publication.issue_name_id')
             cross_join_tables.add('publication.id')
 
-        elif k['criteria'] == 'issue_type':
+        elif k['criteria'] == 'issue type':
             from_tables.add('issue_type')
             from_tables.add('publication')
             if k['operator'] in ['and', 'or']:
-                if attrs:
-                    attrs.append('%s issue_type.type="%s"' % (k['operator'], k['search_field']))
+                if k['match'] == 'exact':
+                    if attrs:
+                        attrs.append('%s issue_type.type="%s"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('issue_type.type="%s"' % k['search_field'])
                 else:
-                    attrs.append('issue_type.type="%s"' % k['search_field'])
+                    if attrs:
+                        attrs.append('%s issue_type.type like "%%%s%%"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('issue_type.type like "%%%s%%"' % k['search_field'])
             else:
                 if attrs:
                     attrs.append('AND issue_type.type!="%s"' % k['search_field'])
@@ -98,10 +122,16 @@ def query_builder(**kwargs):
             from_tables.add('affiliation')
             from_tables.add('publication')
             if k['operator'] in ['and', 'or']:
-                if attrs:
-                    attrs.append('%s affiliation.name="%s"' % (k['operator'], k['search_field']))
+                if k['match'] == 'exact':
+                    if attrs:
+                        attrs.append('%s affiliation.name="%s"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('affiliation.name="%s"' % k['search_field'])
                 else:
-                    attrs.append('affiliation.name="%s"' % k['search_field'])
+                    if attrs:
+                        attrs.append('%s affiliation.name like "%%%s%%"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('affiliation.name like "%%%s%%"' % k['search_field'])
             else:
                 if attrs:
                     attrs.append('AND affiliation.name!="%s"' % k['search_field'])
@@ -113,10 +143,16 @@ def query_builder(**kwargs):
         elif k['criteria'] == 'title':
             from_tables.add('publication')
             if k['operator'] in ['and', 'or']:
-                if attrs:
-                    attrs.append('%s publication.title="%s"' % (k['operator'], k['search_field']))
+                if k['match'] == 'exact':
+                    if attrs:
+                        attrs.append('%s publication.title="%s"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('publication.title="%s"' % k['search_field'])
                 else:
-                    attrs.append('publication.title="%s"' % k['search_field'])
+                    if attrs:
+                        attrs.append('%s publication.title like "%%%s%%"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('publication.title like "%%%s%%"' % k['search_field'])
             else:
                 if attrs:
                     attrs.append('AND publication.title!="%s"' % k['search_field'])
@@ -124,18 +160,24 @@ def query_builder(**kwargs):
                     attrs.append('publication.title!="%s"' % k['search_field'])
             cross_join_tables.add('publication.id')
 
-        elif k['criteria'] == 'pub_date':
+        elif k['criteria'] == 'publication year':
             from_tables.add('publication')
             if k['operator'] in ['and', 'or']:
-                if attrs:
-                    attrs.append('%s publication.pub_date="%s"' % (k['operator'], k['search_field']))
+                if k['match'] == 'exact':
+                    if attrs:
+                        attrs.append('%s publication.pubdate="%s"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('publication.pubdate="%s"' % k['search_field'])
                 else:
-                    attrs.append('publication.pub_date="%s"' % k['search_field'])
+                    if attrs:
+                        attrs.append('%s publication.pubdate like "%%%s%%"' % (k['operator'], k['search_field']))
+                    else:
+                        attrs.append('publication.pubdate like "%%%s%%"' % k['search_field'])
             else:
                 if attrs:
-                    attrs.append('AND publication.pub_date!="%s"' % k['search_field'])
+                    attrs.append('AND publication.pubdate!="%s"' % k['search_field'])
                 else:
-                    attrs.append('publication.pub_date!="%s"' % k['search_field'])
+                    attrs.append('publication.pubdate!="%s"' % k['search_field'])
             cross_join_tables.add('publication.id')
 
     cross_join_tables_string = ''
@@ -257,10 +299,11 @@ def publication_full(request, publication_id):
                         relevant_publications_details.append(dictfetchall(cursor)[0])
 
                 if publication:
-                    return render_to_response('publication.html', {'publications': publication,
-                                                                   'publication_authors': publication_authors,
-                                                                   'publication_keywords': publication_keywords,
-                                                                   'relevant_pubs': relevant_publications_details},
+                    return render_to_response(['publication.html'], {'publications': publication,
+                                                                     'publication_authors': publication_authors,
+                                                                     'publication_keywords': publication_keywords,
+                                                                     'relevant_pubs': relevant_publications_details,
+                                                                     'is_authenticated': True},
                                               context_instance=RequestContext(request))
                 else:
                     raise Http404("No such publication :(")
@@ -285,7 +328,9 @@ def publication_add(request):
             # go ahead, authorized user
             if request.method == 'GET':
                 add_form = PubAdditionForm()
-                return render_to_response('publication_add.html', {'add_form': add_form},
+                return render_to_response(['publication_add.html', 'base.html'],
+                                          {'add_form': add_form,
+                                           'is_authenticated': True},
                                           context_instance=RequestContext(request))
             else:
                 error_message = ''
@@ -470,8 +515,9 @@ def publication_add(request):
                     return render_to_response('publication_add.html', {'add_form': add_form},
                                               context_instance=RequestContext(request))
             add_form = PubAdditionForm()
-            return render_to_response('publication_add.html', {'add_form': add_form,
-                                                               'error_message': error_message},
+            return render_to_response(['publication_add.html'], {'add_form': add_form,
+                                                                 'error_message': error_message,
+                                                                 'is_authenticated': True},
                                       context_instance=RequestContext(request))
 
         # go authorize first, maaaan
@@ -569,8 +615,9 @@ def publication_edit(request, publication_id):
                                                      'controlled_terms_keywords': publication_controlledterms,
                                                      'uncontrolled_terms_keywords': publication_uncontrolledterms})
 
-                return render_to_response('publication_edit.html',
-                                          {'edit_form': edit_form},
+                return render_to_response(['publication_edit.html'],
+                                          {'edit_form': edit_form,
+                                           'is_authenticated': True},
                                           context_instance=RequestContext(request))
             else:
                 cursor = connection.cursor()
@@ -769,9 +816,10 @@ def publication_edit(request, publication_id):
                     except IntegrityError:
                         error_message = 'Duplicate record'
 
-                return render_to_response('publication_edit.html',
+                return render_to_response(['publication_edit.html', 'base.html'],
                                           {'edit_form': edit_form,
-                                           'error_message': error_message},
+                                           'error_message': error_message,
+                                           'is_authenticated': True},
                                           context_instance=RequestContext(request))
                 # go authorize first, maaaan
         else:
@@ -808,21 +856,21 @@ def publication_delete(request):
                     publication_authors = cursor.fetchall()
 
                     # remove keyword if nobody use it
+                    cursor.execute("delete from publication_keyword where publication_id=%s", [publication_id])
                     for kw_id in publication_kwds:
                         cursor.execute("select publication_id from publication_keyword where keyword_id = %s "
                                        "and publication_id!=%s limit 0,1",
                                        [kw_id, publication_id])
                         if cursor.fetchone() is None:
-                            cursor.execute("delete from publication_keyword where publication_id=%s", [publication_id])
                             cursor.execute("delete from keyword where id=%s", [kw_id[0]])
 
                     # remove author if nobody use it
+                    cursor.execute("delete from publication_author WHERE publication_id=%s", [publication_id])
                     for author_id in publication_authors:
                         cursor.execute("select publication_id from publication_author where author_id = %s "
                                        "and publication_id!=%s limit 0,1",
                                        [author_id, publication_id])
                         if cursor.fetchone() is None:
-                            cursor.execute("delete from publication_author WHERE publication_id=%s", [publication_id])
                             cursor.execute("delete from author where id=%s", [author_id[0]])
 
                     # remove publication itself
@@ -876,12 +924,13 @@ def index(request):
             # go ahead, authorized user
             search_form = SearchForm(request.POST)
             cursor = connection.cursor()
-            cursor.execute("select id, title, abstract from publication order by id desc limit 0, 7")
+            cursor.execute("select id, title, abstract from publication order by id desc limit 0, 6")
             recent_publications = dictfetchall(cursor)
 
-            return render_to_response(['search_form.html', 'recent_publications.html'],
+            return render_to_response(['search_form.html', 'recent_publications.html', 'base.html'],
                                       {'recent_publications': recent_publications,
-                                       'search_form': search_form},
+                                       'search_form': search_form,
+                                       'is_authenticated': True},
                                       context_instance=RequestContext(request))
         # go authorize first, maaaan
         else:
@@ -903,7 +952,7 @@ def publication_search(request):
                 limit = int(request.POST.get('limit'))
             except:
                 page = 1
-                limit = 5
+                limit = 6
             start = (int(page) - 1) * limit
 
             if all(key in request.POST for key in ['criteria', 'match', 'operator', 'search_field']) \
@@ -922,10 +971,10 @@ def publication_search(request):
                 else:
                     next_page = -1
 
-                if 0 <= limit <= 100:
+                if 0 <= limit <= 10:
                     cursor.execute('%s limit %s, %s' % (query, start, limit))
                 else:
-                    cursor.execute('%s limit 0, 5' % query)
+                    cursor.execute('%s limit 0, 6' % query)
                 search_results = cursor.fetchall()
                 if not search_results:
                     error_message = 'Nothing found :('
@@ -936,11 +985,12 @@ def publication_search(request):
                         publication_info.append(dictfetchall(cursor)[0])
                     search_results = publication_info
 
-                return render_to_response('search_result.html', {'search_results': search_results,
-                                                                 'error_message': error_message,
-                                                                 'next_page': next_page,
-                                                                 'curr_page': page,
-                                                                 'query_params': query_params},
+                return render_to_response(['search_result.html', 'base.html'], {'search_results': search_results,
+                                                                                'error_message': error_message,
+                                                                                'next_page': next_page,
+                                                                                'curr_page': page,
+                                                                                'query_params': query_params,
+                                                                                'is_authenticated': True},
                                           context_instance=RequestContext(request))
 
             else:
