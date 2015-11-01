@@ -217,14 +217,15 @@ def publication_full(request, publication_id):
                 publication_id = int(publication_id)
                 cursor.execute(
                     "SELECT p.id, title, issn, isbn, doi, pubdate, pages, volume, abstract, url, pub_number, "
-                    "i_name.name i_name, i_type.type i_type, aff.name a_name, pshr.name pshr_name "
-                    "FROM publication p, issue_name i_name, issue_type i_type, affiliation aff, publisher pshr "
+                    "i_name.name as i_name, i_type.type as i_type, aff.name as a_name, pshr.name as pshr_name "
+                    "FROM publication p, issue_name as i_name, issue_type as i_type, affiliation as aff, publisher as pshr "
                     "WHERE p.id = %s "
                     "and p.issue_name_id=i_name.id "
                     "and p.issue_type_id=i_type.id "
                     "and p.affiliation_id=aff.id "
                     "and p.publisher_id=pshr.id", [publication_id])
                 publication = dictfetchall(cursor)[0]
+                # publication = cursor.fetchall()
 
                 cursor.execute("SELECT t1.author_id, name FROM author, "
                                "(SELECT author_id "
@@ -263,7 +264,7 @@ def publication_full(request, publication_id):
                                               context_instance=RequestContext(request))
                 else:
                     raise Http404("No such publication :(")
-            except:
+            except Exception as e:
                 raise Http404("Not a number")
 
         # go authorize first, maaaan
@@ -875,7 +876,7 @@ def index(request):
             # go ahead, authorized user
             search_form = SearchForm(request.POST)
             cursor = connection.cursor()
-            cursor.execute("select id, title from publication order by id desc limit 0, 7")
+            cursor.execute("select id, title, abstract from publication order by id desc limit 0, 7")
             recent_publications = dictfetchall(cursor)
 
             return render_to_response(['search_form.html', 'recent_publications.html'],

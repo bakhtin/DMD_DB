@@ -45,7 +45,7 @@ def authenticate(user_login, password):
 def deauthenticate(session_id):
     try:
         cursor = connection.cursor()
-        cursor.execute("delete * from session where session_id=%s", [session_id])
+        cursor.execute("delete from session where session_id=%s", [session_id])
         return None
     except:
         return None

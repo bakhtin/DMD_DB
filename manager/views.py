@@ -11,12 +11,13 @@ def do_authenticate(request):
         return render_to_response('login.html', {'login_form': login_form},
                               context_instance=RequestContext(request))
     else:
-        session_id = authenticate(request.POST.get('login'), request.POST.get('password'))
-        if session_id:
-            response = redirect('/')
-            response.set_cookie('session_id', value=session_id, max_age=86400)
-            return response
-        else:
+        try:
+            session_id = authenticate(request.POST.get('login'), request.POST.get('password'))
+            if session_id:
+                response = redirect('/')
+                response.set_cookie('session_id', value=session_id, max_age=86400)
+                return response
+        except BadCredentials:
             message = 'Bad credentials'
             login_form = LoginForm()
             return render_to_response('login.html', {'login_form': login_form,
@@ -27,4 +28,4 @@ def do_authenticate(request):
 def do_logout(request):
     if 'session_id' in request.COOKIES:
         deauthenticate(request.COOKIES['session_id'])
-        return redirect('/')
+    return redirect('/')

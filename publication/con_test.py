@@ -12,7 +12,11 @@ def dictfetchall(cursor):
     ]
 
 
-cursor = connection.cursor(raw=True)
-cursor.execute("select id, pubdate from publication where id=2")
-a = cursor.fetchone(raw=True)
-print a
+cursor = connection.cursor()
+publication_id = 1053
+cursor.execute(
+    "SELECT title, issn, isbn, doi, pubdate, pages, volume, abstract, url, pub_number "
+    "FROM publication "
+    "WHERE id = %s ", [publication_id])  # publication = dictfetchall(cursor)[0]
+publication = cursor.fetchall()
+print publication

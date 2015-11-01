@@ -1,190 +1,181 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container">
-    <br><br>
-    <!-- HEADER -->
-    <div class="panel panel-default">
-        {% if publications.title %}
-        <div class="panel-body">
-            <h3> {{ publications.title }}
-                <a href="{{ publications.url }}">
-                    <small class="glyphicon glyphicon-new-window"></small>
-                </a>
-            </h3>
-            {% if publication_authors %}
-            <ul class="list-inline">
-                {% for author in publication_authors %}
-                <li><a href='{% url "show_author_page_base" author.author_id%}'>{{ author.name }}</a></li>
-                {% endfor %}
-            </ul>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="jumbotron">
+            {% if publications.title %}
+                <div class="panel-body">
+                    <h2 id="title"> {{ publications.title }}
+                        <a href="{{ publications.url }}">
+                            <small class="glyphicon glyphicon-new-window"></small>
+                        </a>
+                    </h2>
+                    {% if publication_authors %}
+                        <ul class="list-inline">
+                            {% for author in publication_authors %}
+                                <li><a href='{% url "show_author_page_base" author.author_id %}'>{{ author.name }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
             {% endif %}
         </div>
-        {% endif %}
-    </div>
 
-    <div class="row">
-        <!-- abstract -->
+        <div class="row">
+            <div class="container col-xs-12 col-sm-8 col-md-8 col-lg-8">
+                <!-- abstract -->
+                <div id="abstract" class="text-justify panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Abstract</h4>
+                    </div>
+                    <div class="panel-body">
+                        {% if publications.abstract %}
+                            {{ publications.abstract }}
+                        {% else %}
+                            No abstract for this publication.
+                        {% endif %}
+                    </div>
 
-        <div class="container col-xs-6">
-            <div class="text-justify panel panel-default">
-                <div class="panel-heading">
-                    <h4 class="panel-title">Abstract</h4>
                 </div>
-                <div class="panel-body">
-                    {% if publications.abstract %}
-                    {{ publications.abstract }}
-                    {% else %}
-                    No abstract for this publication.
-                    {% endif %}
+
+                <!-- Publication info -->
+                <div id="pubinfo" class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            Publication info
+                        </h4>
+                    </div>
+                    <table class="table">
+                        {% if publications.i_name %}
+                            <tr>
+                                <td>Issue name:</td>
+                                <td>{{ publications.i_name }}</td>
+                            </tr>
+                        {% endif %}
+
+                        {% if publications.i_type %}
+                            <tr>
+                                <td>Issue type:</td>
+                                <td>{{ publications.i_type }}</td>
+                            </tr>
+                        {% endif %}
+
+                        {% if publications.a_name %}
+                            <tr>
+                                <td>Affiliation:</td>
+                                <td>{{ publications.a_name }}</td>
+                            </tr>
+                        {% endif %}
+
+
+                        {% if publications.doi %}
+                            <tr>
+                                <td>
+                                    <abbr title="Digital Object Identifier">
+                                        DOI:
+                                    </abbr>
+                                </td>
+                                <td>{{ publications.doi }}</td>
+                            </tr>
+                        {% endif %}
+
+                        {% if publications.issn %}
+                            <tr>
+                                <td>
+                                    <abbr title="International Standard Serial Number">
+                                        ISSN:
+                                    </abbr>
+                                </td>
+                                <td>{{ publications.issn }}</td>
+                            </tr>
+                        {% endif %}
+
+
+                        {% if publications.issn %}
+                            <tr>
+                                <td>
+                                    <abbr title="International Standard Book Number">
+                                        ISBN:
+                                    </abbr></td>
+                                <td>{{ publications.isbn }}</td>
+                            </tr>
+                        {% endif %}
+
+                        {% if publications.pubdate %}
+                            <tr>
+                                <td>Publication date:</td>
+                                <td> {{ publications.pubdate }}</td>
+                            </tr>
+                        {% endif %}
+
+                        {% if publications.pub_number %}
+                            <tr>
+                                <td>Publication number:</td>
+                                <td> {{ publications.pub_number }}</td>
+                            </tr>
+                        {% endif %}
+
+                        {% if publications.pages %}
+                            <tr>
+                                <td>Pages:</td>
+                                <td>{{ publications.pages }}</td>
+                            </tr>
+                        {% endif %}
+
+                        {% if publications.volume %}
+                            <tr>
+                                <td>Volume:</td>
+                                <td>{{ publications.volume }}</td>
+                            </tr>
+                        {% endif %}
+
+                    </table>
                 </div>
 
+                <!-- Related Articles -->
+                <div id="related" class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Related publications</h4>
+                    </div>
+                    <ul class="panel-body list-group">
+                        {% for relevant_publication in relevant_pubs %}
+                            <li class="list-group-item"><a
+                                    href="{% url 'show_publication_detail' relevant_publication.id %}">
+                                {{ relevant_publication.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
+
+            <!-- keywords -->
+            <div class="container col-xs-12 col-sm-4 col-md-4 col-lg-4">
+                {% for type, keywords in publication_keywords.items %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            {% if type == "controlledterms" %}
+                                <h4 class="panel-title" id="{{ type }}">Controlled terms</h4>
+                            {% elif type == "thesaurusterms" %}
+                                <h4 class="panel-title" id="{{ type }}">Thesaurus terms</h4>
+                            {% elif type == "uncontrolledterms" %}
+                                <h4 class="panel-title" id="{{ type }}">Uncontrolled terms</h4>
+                            {% endif %}
+                        </div>
+                        <ul class="list-unstyled panel-body">
+                            {% for keyword in keywords %}
+                                <li>
+                                    <small> > {{ keyword }}</small>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+
+
         </div>
 
-
-        <!-- Publication info -->
-        <div class="container col-xs-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h4 class="panel-title">
-                        Publication info
-                    </h4>
-                </div>
-                <table class="table">
-                    {% if publications.i_name %}
-                    <tr>
-                        <td>Issue name:</td>
-                        <td>{{ publications.i_name }}</td>
-                    </tr>
-                    {% endif %}
-
-                    {% if publications.i_type %}
-                    <tr>
-                        <td>Issue type:</td>
-                        <td>{{ publications.i_type }}</td>
-                    </tr>
-                    {% endif %}
-
-                    {% if publications.a_name %}
-                    <tr>
-                        <td>Affiliation:</td>
-                        <td>{{ publications.a_name }}</td>
-                    </tr>
-                    {% endif %}
-
-
-                    {% if publications.name %}
-                    <tr>
-                        <td>Publisher:</td>
-                        <td>{{ publications.name }}</td>
-                    </tr>
-                    {% endif %}
-
-                    {% if publications.doi %}
-                    <tr>
-                        <td>
-                            <abbr title="Digital Object Identifier">
-                                DOI:
-                            </abbr>
-                        </td>
-                        <td>{{ publications.doi }}</td>
-                    </tr>
-                    {% endif %}
-
-                    {% if publications.issn %}
-                    <tr>
-                        <td>
-                            <abbr title="International Standard Serial Number">
-                                ISSN:
-                            </abbr>
-                        </td>
-                        <td>{{ publications.issn }}</td>
-                    </tr>
-                    {% endif %}
-
-
-                    {% if publications.issn %}
-                    <tr>
-                        <td>
-                            <abbr title="International Standard Book Number">
-                                ISBN:
-                            </abbr></td>
-                        <td>{{ publications.isbn }}</td>
-                    </tr>
-                    {% endif %}
-
-                    {% if publications.pubdate %}
-                    <tr>
-                        <td>Publication date:</td>
-                        <td> {{ publications.pubdate }}</td>
-                    </tr>
-                    {% endif %}
-
-                    {% if publications.pub_number %}
-                    <tr>
-                        <td>Publication number:</td>
-                        <td> {{ publications.pub_number }}</td>
-                    </tr>
-                    {% endif %}
-
-                    {% if publications.pages %}
-                    <tr>
-                        <td>Pages:</td>
-                        <td>{{ publications.pages }}</td>
-                    </tr>
-                    {% endif %}
-
-                    {% if publications.volume %}
-                    <tr>
-                        <td>Volume:</td>
-                        <td>{{ publications.volume }}</td>
-                    </tr>
-                    {% endif %}
-
-                </table>
-            </div>
-        </div>
     </div>
-</div>
-<!-- END -->
-<h2>Publication data</h2>
-<a class="btn btn-default" href="{% url " publication_edit" publications.id %}">[EDIT]</a>
-<form action="{% url " publication_delete" %}" method="POST">
-{% csrf_token %}
-<input type="hidden" name="publication_id" value="{{ publications.id }}">
-<input class="btn btn-default" type="submit" value="[DELETE]">
-</form>
-    <ul>
+    <!-- END -->
 
-    </ul>
-
-<h2>Authors</h2>
-<ul>
-    {% for author in publication_authors %}
-    <li><a href="{% url " show_author_page_base" author.author_id%}">{{ author.name }}</a></li>
-    {% endfor %}
-    </ul>
-
-<h2>Keywords</h2>
-{% for type, keywords in publication_keywords.items %}
-{% if type == "controlledterms" %}
-<h4>Controlled terms</h4>
-{% elif type == "thesaurusterms" %}
-<h4>Thesaurus terms</h4>
-{% elif type == "uncontrolledterms" %}
-<h4>Uncontrolled terms</h4>
-{% endif %}
-<ul>
-    {% for keyword in keywords %}
-    <li>{{ keyword }}</li>
-    {% endfor %}
-</ul>
-{% endfor %}
-<h2>Related publications:</h2>
-<ul>
-    {% for relevant_publication in relevant_pubs %}
-    <li><a href="{% url 'show_publication_detail' relevant_publication.id %}">{{ relevant_publication.title }}</a></li>
-    {% endfor %}
-</ul>
-</div>
 {% endblock %}
