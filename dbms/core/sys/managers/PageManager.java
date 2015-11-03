@@ -1,4 +1,6 @@
-package core.sys;
+package core.sys.managers;
+
+import core.sys.descriptive.Page;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -36,16 +38,14 @@ public class PageManager {
         file.seek((long) n * Page.pageSize);
         file.read(page);
 
-        Page p = Page.deserialize(ByteBuffer.wrap(page));
-
-        return p;
+        return Page.deserialize(ByteBuffer.wrap(page));
     }
 
     public void writePage(Page p) throws IOException {
-        if (p.number > totalPages)
-            throw new IOException("WRITE PAGE ERROR: page number " + p.number + " > total: " + totalPages);
+        if (p.getNumber() > totalPages)
+            throw new IOException("WRITE PAGE ERROR: page number " + p.getNumber() + " > total: " + totalPages);
 
-        file.seek((long) p.number * Page.pageSize);
+        file.seek((long) p.getNumber() * Page.pageSize);
         file.write(p.serialize().array());
     }
 

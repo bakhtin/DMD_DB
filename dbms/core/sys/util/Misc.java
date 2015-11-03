@@ -1,4 +1,4 @@
-package core.sys.parse;
+package core.sys.util;
 
 import java.nio.ByteBuffer;
 
@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 public class Misc {
     public static String parseStr(ByteBuffer b) {
         short len = b.getShort();
-        byte [] str = new byte[len];
+        byte[] str = new byte[len];
         b.get(str);
         return new String(str);
     }
@@ -24,13 +24,28 @@ public class Misc {
     /**
      * Add string s to buffer b
      *
-     * @param b
-     * @param s
+     * @param b - ByteBuffer
+     * @param s - String
      */
     public static void addStr(ByteBuffer b, String s) {
         byte[] str = s.getBytes();
-        b.putShort((short)str.length);
+        b.putShort((short) str.length);
         b.put(str);
+    }
+
+    /**
+     * Compares wto byte arrays.
+     *
+     * @param a - byte array
+     * @param b - byte array
+     * @return - true if arrays a and b are equal
+     */
+    public static boolean compareBytes(byte[] a, byte[] b) {
+        if (a.length != b.length) return false;
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] != b[i]) return false;
+        }
+        return true;
     }
 
 }

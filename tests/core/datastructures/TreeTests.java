@@ -1,16 +1,19 @@
-package core.tree;
+package core.datastructures;
+
+import core.datastructures.btree.BTree;
 import org.junit.Test;
+
 import java.util.Random;
 
 /**
  * @author Bogdan Vaneev
  *         Innopolis University
- * @date 10/21/2015
+ *         10/21/2015
  */
 public class TreeTests {
     @Test
     public void bptreeTest() throws Exception {
-        final int NUMBER = 5000000;
+        final int NUMBER = 1000000;
 
         System.out.println("Adding " + NUMBER + " elements.");
 
@@ -43,5 +46,16 @@ public class TreeTests {
         }
         System.out.println("Removing test succeeded!\n");
 
+    }
+
+    @Test
+    public void anotherBpTreeTest() throws Exception {
+        BTree<Integer> tree = new BTree<>(250);
+
+        for (int i = 0; i < 1000000; i++) {
+            tree.add(i);
+        }
+
+        System.out.println(tree.toString());
     }
 }

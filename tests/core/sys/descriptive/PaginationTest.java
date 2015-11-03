@@ -1,8 +1,6 @@
-package core.sys;
+package core.sys.descriptive;
 
 import org.junit.Test;
-
-import java.io.File;
 
 /**
  * @author Bogdan Vaneev
@@ -14,6 +12,7 @@ public class PaginationTest {
 
     @Test
     public void testPageRead(){
+        /*
         File f = new File("huidb");
         f.delete();
         PageManager pager = new PageManager("huidb");
@@ -58,5 +57,6 @@ public class PaginationTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        */
     }
 }

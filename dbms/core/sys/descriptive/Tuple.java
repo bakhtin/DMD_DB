@@ -1,4 +1,4 @@
-package core;
+package core.sys.descriptive;
 
 /**
  * @author Bogdan Vaneev
@@ -6,4 +6,5 @@ package core;
  *         10/27/2015
  */
 public class Tuple {
+
 }

@@ -1,10 +1,10 @@
-package core.tree;
+package core.datastructures;
 
-import java.util.*;
 import java.io.StringWriter;
+import java.util.*;
 
 /**
- * Implements a SortedMap as a B+ tree.
+ * Implements a SortedMap as a B+ datastructures.
  */
 public class BPTree<K, V> extends AbstractMap<K, V> implements SortedMap<K, V> {
     private static Comparator defaultComp = new DefaultComparator();
@@ -164,7 +164,7 @@ public class BPTree<K, V> extends AbstractMap<K, V> implements SortedMap<K, V> {
         // Get previous value at the key.
         V ret = get(key);
 
-        // Insert the new key/value into the tree.
+        // Insert the new key/value into the datastructures.
         Node newNode = root.put(key, value);
 
         // Create new root?
@@ -281,7 +281,26 @@ public class BPTree<K, V> extends AbstractMap<K, V> implements SortedMap<K, V> {
     }
 
     /**
-     * Base class for tree nodes.
+     * Casts objects to Comparable and compares them.
+     */
+    private static class DefaultComparator<K> implements Comparator<K> {
+        /**
+         * Casts a to Comparable and compares it to b.
+         */
+        public int compare(K a, K b) {
+            if (a == null) {
+                if (b == null)
+                    return 0;
+                else
+                    return -1;
+            } else {
+                return ((Comparable) a).compareTo(b);
+            }
+        }
+    }
+
+    /**
+     * Base class for datastructures nodes.
      */
     private abstract class Node {
         public ArrayList<K> keys;
@@ -308,7 +327,7 @@ public class BPTree<K, V> extends AbstractMap<K, V> implements SortedMap<K, V> {
     }
 
     /**
-     * Represents a guide node in the tree.
+     * Represents a guide node in the datastructures.
      */
     private class GuideNode extends Node {
         public ArrayList<Node> children;
@@ -521,7 +540,7 @@ public class BPTree<K, V> extends AbstractMap<K, V> implements SortedMap<K, V> {
     }
 
     /**
-     * Represents a leaf node in the tree.
+     * Represents a leaf node in the datastructures.
      */
     private class LeafNode extends Node {
         public ArrayList<V> values;
@@ -704,32 +723,12 @@ public class BPTree<K, V> extends AbstractMap<K, V> implements SortedMap<K, V> {
     }
 
     /**
-     * Casts objects to Comparable and compares them.
-     */
-    private static class DefaultComparator<K> implements Comparator<K> {
-        /**
-         * Casts a to Comparable and compares it to b.
-         */
-        public int compare(K a, K b) {
-            if (a == null) {
-                if (b == null)
-                    return 0;
-                else
-                    return -1;
-            } else {
-                return ((Comparable) a).compareTo(b);
-            }
-        }
-    }
-
-    /**
      * A SortedMap which represents a sub-region of the key-space mapped by a BPTree.
      */
     private class SubMap extends AbstractMap<K, V> implements SortedMap<K, V> {
+        private final EntrySet esInstance = new EntrySet();
         private K low;
         private K high;
-
-        private final EntrySet esInstance = new EntrySet();
 
         /**
          * Creates a new SubMap representing the sub-region between low (inclusive) and high (exclusive).
@@ -983,7 +982,7 @@ public class BPTree<K, V> extends AbstractMap<K, V> implements SortedMap<K, V> {
                  * Returns the next entry in the iteration.
                  */
                 public Entry<K, V> next() {
-                    // Make sure tree has not been modified.
+                    // Make sure datastructures has not been modified.
                     if (modCount != BPTree.this.modCount)
                         throw new ConcurrentModificationException();
 
@@ -1009,7 +1008,7 @@ public class BPTree<K, V> extends AbstractMap<K, V> implements SortedMap<K, V> {
                  * Removes the most recently retrieved element from the collection.
                  */
                 public void remove() {
-                    // Make sure tree has not been modified.
+                    // Make sure datastructures has not been modified.
                     if (modCount != BPTree.this.modCount)
                         throw new ConcurrentModificationException();
 
@@ -1031,14 +1030,14 @@ public class BPTree<K, V> extends AbstractMap<K, V> implements SortedMap<K, V> {
     }
 
     /**
-     * An entry in a BPTree bound to a key and backed by the tree.
+     * An entry in a BPTree bound to a key and backed by the datastructures.
      */
     private class BPTEntry implements Entry<K, V> {
         private K key;
         private BPTree<K, V> tree;
 
         /**
-         * Creates a new BPTEntry bound to the specified key and backed by the specified tree.
+         * Creates a new BPTEntry bound to the specified key and backed by the specified datastructures.
          */
         public BPTEntry(K key, BPTree<K, V> tree) {
             this.key = key;

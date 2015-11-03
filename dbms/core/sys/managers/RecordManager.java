@@ -1,4 +1,4 @@
-package core;
+package core.sys.managers;
 
 /**
  * @author Bogdan Vaneev
