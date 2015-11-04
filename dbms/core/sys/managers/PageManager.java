@@ -1,6 +1,7 @@
 package core.sys.managers;
 
 import core.sys.descriptive.Page;
+import core.sys.exceptions.DBStatus;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -11,27 +12,16 @@ import java.nio.ByteBuffer;
  *         Innopolis University
  *         10/22/2015
  */
-public class PageManager {
-    private String path;
+class PageManager {
     private RandomAccessFile file;
 
-    private int totalPages = 0;
-
-
-    public PageManager(String path) {
-        this.path = path;
-        try {
-            file = new RandomAccessFile(path, "rw");
-
-            totalPages = (int) (file.length() / Page.pageSize);
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+    public PageManager(RandomAccessFile f) throws DBStatus {
+        this.file = f;
     }
 
     public Page readPage(int n) throws IOException {
-        if (n > totalPages) throw new IOException("WRITE PAGE ERROR: page number " + n + " > total: " + totalPages);
+        if (n > DBManager.totalPages)
+            throw new IOException("WRITE PAGE ERROR: page number " + n + " > total: " + DBManager.totalPages);
 
         byte[] page = new byte[Page.pageSize];
 
@@ -42,15 +32,15 @@ public class PageManager {
     }
 
     public void writePage(Page p) throws IOException {
-        if (p.getNumber() > totalPages)
-            throw new IOException("WRITE PAGE ERROR: page number " + p.getNumber() + " > total: " + totalPages);
+        if (p.getNumber() > DBManager.totalPages)
+            throw new IOException("WRITE PAGE ERROR: page number " + p.getNumber() + " > total: " + DBManager.totalPages);
 
         file.seek((long) p.getNumber() * Page.pageSize);
         file.write(p.serialize().array());
     }
 
     public Page allocatePage() throws IOException {
-        Page p = new Page(totalPages++);
+        Page p = new Page(DBManager.totalPages++);
         writePage(p);
         return p;
     }

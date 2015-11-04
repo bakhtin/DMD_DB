@@ -11,7 +11,7 @@ import java.util.Map;
  *         Innopolis University
  *         10/24/2015
  */
-public class Cache {
+public class CacheManager {
     private static int cacheSize = 2048;
     Map<Integer, Page> cache = new LinkedHashMap<Integer, Page>(cacheSize, 0.75f, true) {
         @Override
@@ -20,7 +20,6 @@ public class Cache {
         }
     };
 
-    private String path;
     private PageManager pager;
 
 
@@ -29,9 +28,8 @@ public class Cache {
     private Long miss = 0L;
 
 
-    public Cache(String p) {
-        this.path = p;
-        pager = new PageManager(path);
+    public CacheManager(PageManager f) {
+        pager = f;
     }
 
     public Double hitRate() {

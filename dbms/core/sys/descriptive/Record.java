@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
  *         Innopolis University
  *         10/27/2015
  */
-public class Record {
+public class Record implements Comparable<Integer> {
     /** HEADER **/
     /**
      * 1 - tuple
@@ -35,9 +35,9 @@ public class Record {
      * Real length of the record
      */
     int record_length;
-    ByteBuffer payload;
+    byte[] payload;
 
-    // TODO: make tests for record!
+
     public static Record deserialize(ByteBuffer buf) {
         Record r = new Record();
         r.type = buf.get();
@@ -45,13 +45,14 @@ public class Record {
         r.backward_overflow = buf.getInt();
         r.forward_overfow = buf.getInt();
         r.record_length = buf.getInt();
-        r.payload = buf;
-        r.payload.flip(); // change mode from read to write
+        r.payload = new byte[buf.capacity() - buf.position()];
+        buf.get(r.payload);
+
         return r;
     }
 
     public ByteBuffer serialize() {
-        int size = 17 + payload.capacity(); // 1 + 4 + 4 + 4 + 4 + payload
+        int size = 17 + payload.length; // 1 + 4 + 4 + 4 + 4 + payload
         ByteBuffer buf = ByteBuffer.allocate(size);
         // put header
         buf.put(type);
@@ -66,5 +67,10 @@ public class Record {
         buf.flip();
 
         return buf;
+    }
+
+    @Override
+    public int compareTo(Integer o) {
+        return Integer.compareUnsigned(record_length, o);
     }
 }

@@ -48,7 +48,6 @@ public class Page implements Comparable<Integer> {
         p.numberOfRecords = buf.getInt();
         p.previous = buf.getInt();
         p.next = buf.getInt();
-        byte[] data = new byte[dataSize];
         p.data = buf;
         p.data.flip(); // change mode from read to write
         return p;

@@ -111,11 +111,16 @@ public class Attribute {
     public ByteBuffer serialize() {
         byte[] nameb = this.name.getBytes();
         byte[] fkb;
-        int size = 2 + nameb.length + 1 + 1 + defaultValue.length;
+
+        int size = 2 + nameb.length + 1 + 1;
 
         if (this.fk != null) {
             fkb = this.fk.getBytes();
             size += fkb.length;
+        }
+
+        if (this.defaultValue != null) {
+            size += defaultValue.length;
         }
 
         ByteBuffer buf = ByteBuffer.allocate(size);
@@ -125,11 +130,12 @@ public class Attribute {
         buf.put(type);
         buf.put(flags);
 
-        buf.put(defaultValue);
+        if (this.hasFlag(F_DV))
+            buf.put(defaultValue);
 
-        if ((flags & F_FK) != 0) {
+        if (this.hasFlag(F_FK))
             Misc.addStr(buf, fk);
-        }
+
 
         buf.flip();
         return buf;
