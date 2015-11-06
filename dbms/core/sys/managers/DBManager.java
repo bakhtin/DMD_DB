@@ -1,11 +1,17 @@
 package core.sys.managers;
 
+import core.sys.descriptive.Attribute;
 import core.sys.descriptive.Page;
+import core.sys.descriptive.Table;
 import core.sys.exceptions.DBStatus;
+import core.sys.exceptions.SQLError;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author Bogdan Vaneev
@@ -17,10 +23,13 @@ public class DBManager {
     String dbpath;
     RandomAccessFile file;
     File db;
-    CacheManager pageCache;
-    PageManager pager;
 
-    DBManager(String path) {
+    RecordManager recordManager;
+    SQL cursor;
+
+    Map<String, Table> tables = new TreeMap<>();
+
+    public DBManager(String path) {
         this.dbpath = path;
 
         try {
@@ -30,11 +39,13 @@ public class DBManager {
                 /** OK **/
                 case DBStatus.DB_EXISTS:
                     System.out.println("DB File exists. Initializing...");
+
                     break;
 
                 /** OK **/
                 case DBStatus.DB_NOT_EXISTS:
-                    System.out.println("DB File not exists. Create new DB file...");
+                    System.out.println("DB File does not exist. Creating new DB file...");
+
                     break;
 
                 /** ERROR **/
@@ -52,6 +63,11 @@ public class DBManager {
         }
     }
 
+    /**
+     * Open database
+     *
+     * @throws DBStatus
+     */
     private void open() throws DBStatus {
         db = new File(dbpath);
 
@@ -75,10 +91,60 @@ public class DBManager {
             throw new DBStatus(DBStatus.DB_ACCESS_ERROR); // can't get access
         }
 
-        pager = new PageManager(file);
-        pageCache = new CacheManager(pager);
+        recordManager = new RecordManager(file);
+        cursor = new SQL();
 
         throw stat;
+    }
+
+    private void createDb() throws IOException {
+        Page main = recordManager.pageManager.allocatePage();
+        Page freelist = recordManager.pageManager.allocatePage();
+        Page freespace = recordManager.pageManager.allocatePage();
+    }
+
+    /**
+     * @throws IOException
+     */
+    private void createMainPage() throws IOException {
+        Page main = recordManager.pageManager.allocatePage();
+
+    }
+
+    /**
+     * Table with:
+     *
+     * @throws IOException
+     */
+    private Page createFreelistPage() throws IOException, SQLError {
+        Page freelist = recordManager.pageManager.allocatePage();
+        Table t_freelist = new Table("freelist", 1);
+        t_freelist.attributes[0].setName("number");
+        t_freelist.attributes[0].setType(Attribute.T_INT);
+
+        return freelist;
+    }
+
+    /**
+     * All pages in this table are pages with tuples
+     * Table with:
+     * page_id INT
+     * free SHORT
+     *
+     * @throws IOException
+     */
+    private Page createPageListPage() throws IOException, SQLError {
+        Page freespace = recordManager.pageManager.allocatePage();
+        Table t_freespace = new Table("freespace", 2);
+
+        t_freespace.attributes[0].setName("page_id");
+        t_freespace.attributes[0].setType(Attribute.T_TEXT);
+
+        t_freespace.attributes[1].setName("free");
+        t_freespace.attributes[1].setType(Attribute.T_SHORT);
+
+
+        return freespace;
     }
 
 }

@@ -1,5 +1,6 @@
 package core.sys.descriptive;
 
+import core.sys.exceptions.SQLError;
 import core.sys.util.Misc;
 
 import java.nio.ByteBuffer;
@@ -10,12 +11,18 @@ import java.nio.ByteBuffer;
  *         10/24/2015
  */
 public class Table {
+    public Attribute[] attributes;
     String tbl_name;
-
     int recordsTotal = 0;
     int rootpage = 0;
 
-    Attribute[] attributes;
+    Table() {
+    }
+
+    public Table(String name, int attrn) throws SQLError {
+        setName(name);
+        attributes = new Attribute[attrn];
+    }
 
     public static Table deserialize(ByteBuffer b) {
         Table t = new Table();
@@ -31,6 +38,18 @@ public class Table {
         }
 
         return t;
+    }
+
+    public String getName() {
+        return tbl_name;
+    }
+
+    public void setName(String n) throws SQLError {
+        if (n.matches("[a-z0-9A-Z_\\-]{1,24}")) {
+            this.tbl_name = n;
+        } else {
+            throw new SQLError("Incorrect table name");
+        }
     }
 
     public ByteBuffer serialize() {

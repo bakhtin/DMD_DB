@@ -1,5 +1,7 @@
 package core.sys.descriptive;
 
+import core.sys.exceptions.SQLError;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -8,8 +10,14 @@ import java.nio.ByteBuffer;
  *         10/27/2015
  */
 public class Record implements Comparable<Integer> {
+    public static final byte T_TABLE = 0;
+    public static final byte T_TUPLE = 1;
+    public static final byte T_INODE = 2;
+    public static final byte T_LNODE = 3;
+
     /** HEADER **/
     /**
+     * 0 - table
      * 1 - tuple
      * 2 - internal b+tree node
      * 3 - leaf b+tree node
@@ -37,8 +45,15 @@ public class Record implements Comparable<Integer> {
     int record_length;
     byte[] payload;
 
+    Record() {
+    }
 
-    public static Record deserialize(ByteBuffer buf) {
+    public Record(byte type, int rowid) throws SQLError {
+        this.setType(type);
+        this.setRowid(rowid);
+    }
+
+    public static Record deserialize(ByteBuffer buf) throws SQLError {
         Record r = new Record();
         r.type = buf.get();
         r.rowid = buf.getInt();
@@ -49,6 +64,18 @@ public class Record implements Comparable<Integer> {
         buf.get(r.payload);
 
         return r;
+    }
+
+    public static boolean check(byte[] pl) {
+        if (pl.length > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public int size() {
+        return 17 + payload.length;
     }
 
     public ByteBuffer serialize() {
@@ -72,5 +99,34 @@ public class Record implements Comparable<Integer> {
     @Override
     public int compareTo(Integer o) {
         return Integer.compareUnsigned(record_length, o);
+    }
+
+    public void setType(byte type) throws SQLError {
+        if (type >= 1 && type <= 3) this.type = type;
+        else throw new SQLError("Wrong record type");
+    }
+
+    public void setRowid(int rowid) throws SQLError {
+        if (rowid > 0) this.rowid = rowid;
+        else throw new SQLError("Wrong record rowid");
+    }
+
+    public void setBackward_overflow(int bo) throws SQLError {
+        if (bo > 0) this.backward_overflow = bo;
+        else throw new SQLError("Wrong record backward overflow");
+    }
+
+    public void setForward_overfow(int fo) throws SQLError {
+        if (fo > 0) this.forward_overfow = fo;
+        else throw new SQLError("Wrong record forward overflow");
+    }
+
+    public void setPayload(byte[] pl) throws SQLError {
+        if (check(pl)) {
+            this.payload = pl;
+            this.record_length = pl.length;
+        } else {
+            throw new SQLError("Wrong record payload");
+        }
     }
 }

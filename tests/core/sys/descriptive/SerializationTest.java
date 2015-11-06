@@ -1,5 +1,6 @@
 package core.sys.descriptive;
 
+import core.sys.exceptions.SQLError;
 import core.sys.util.Misc;
 import org.junit.Test;
 
@@ -12,7 +13,7 @@ import java.nio.ByteBuffer;
  */
 public class SerializationTest {
     @Test
-    public void testTable() throws Exception {
+    public void testTable() throws Exception, SQLError {
         Table t = new Table();
         t.rootpage = 30;
         t.recordsTotal = 100500;
@@ -38,7 +39,7 @@ public class SerializationTest {
     }
 
     @Test
-    public void testRecord() throws Exception {
+    public void testRecord() throws Exception, SQLError {
         Record r = new Record();
         r.type = 1;
         r.payload = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -83,8 +84,8 @@ public class SerializationTest {
 
 
     @Test
-    public void testAttribute() throws Exception {
-        Attribute a = new Attribute("hello world my name is Attribute");
+    public void testAttribute() throws Exception, SQLError {
+        Attribute a = new Attribute("hello");
         a.setDefaultValue(new byte[]{1, 2, 3, 4});
         a.setFlag(Attribute.F_PK);
         a.setType((byte) 0);

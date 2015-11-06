@@ -8,6 +8,12 @@ import java.nio.ByteBuffer;
  *         10/24/2015
  */
 public class Misc {
+    /**
+     * Read string from buffer b
+     *
+     * @param b - ByteBuffer
+     * @return - String
+     */
     public static String parseStr(ByteBuffer b) {
         short len = b.getShort();
         byte[] str = new byte[len];
@@ -15,7 +21,14 @@ public class Misc {
         return new String(str);
     }
 
-    public static byte[] parseBytes(ByteBuffer b, int length) {
+    /**
+     * Read bytes from the ByteBuffer
+     *
+     * @param b - ByteBuffer
+     * @return - byte array
+     */
+    public static byte[] parseBytes(ByteBuffer b) {
+        short length = b.getShort();
         byte[] buf = new byte[length];
         b.get(buf);
         return buf;
@@ -34,6 +47,17 @@ public class Misc {
     }
 
     /**
+     * Add byte array to buffer b
+     *
+     * @param b     - ByteBuffer
+     * @param bytes - byte array
+     */
+    public static void addBytes(ByteBuffer b, byte[] bytes) {
+        b.putShort((short) bytes.length);
+        b.put(bytes);
+    }
+
+    /**
      * Compares wto byte arrays.
      *
      * @param a - byte array
@@ -46,6 +70,17 @@ public class Misc {
             if (a[i] != b[i]) return false;
         }
         return true;
+    }
+
+    public static byte[] subbyte(byte[] array, int start, int end) {
+        if (end < start) throw new IllegalStateException("End > Start");
+        if (start == 0 && end == array.length) return array;
+
+        byte[] result = new byte[end - start];
+        for (int i = start; i < end; i++) {
+            result[i - start] = array[i];
+        }
+        return result;
     }
 
 }

@@ -1,6 +1,11 @@
 package core.sys.descriptive;
 
+import core.sys.exceptions.RecordStatus;
+import core.sys.exceptions.SQLError;
+
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Bogdan Vaneev
@@ -12,60 +17,113 @@ public class Page implements Comparable<Integer> {
     public final static int headerSize = 17; // 4*int + byte
     public final static int dataSize = pageSize - headerSize;
 
+    public static final byte T_FREE = 0;
+    public static final byte T_TUPLE = 1;
+    public static final byte T_INODE = 2;
+    public static final byte T_LNODE = 3;
+
     /**
      * HEADER
      **/
     int number;
     /**
-     * 0 - page with tuples
-     * 1 - page with b+tree internal nodes
-     * 2 - page with b+tree leaf nodes
+     * 1 - page with tuples
+     * 2 - page with b+tree internal nodes
+     * 3 - page with b+tree leaf nodes
      */
     byte type;
-
-    int numberOfRecords;
 
     // linked pointers to previous and next page
     int previous = 0;
     int next = 0;
 
-    ByteBuffer data = ByteBuffer.allocate(dataSize);
-
     /**
      * END OF HEADER
      **/
 
+    int recordsSize = 0; // not written in the file
+    Map<Integer, Record> records = new HashMap<>(500);
+
+
+
     public Page(int n) {
         number = n;
         type = 0;
-        numberOfRecords = 0;
     }
 
-    public static Page deserialize(ByteBuffer buf) {
+    public static Page deserialize(ByteBuffer buf) throws SQLError {
         Page p = new Page(0);
         p.number = buf.getInt();
         p.type = buf.get();
-        p.numberOfRecords = buf.getInt();
+        int numberOfRecords = buf.getInt();
         p.previous = buf.getInt();
         p.next = buf.getInt();
-        p.data = buf;
-        p.data.flip(); // change mode from read to write
+
+        for (int i = 0; i < numberOfRecords; i++) {
+            Record r = Record.deserialize(buf);
+            p.records.put(r.rowid, r);
+        }
         return p;
     }
 
-    public ByteBuffer serialize(){
+    public boolean canInsert(Record record) {
+        return (record.record_length + recordsSize <= dataSize);
+    }
+
+    public int addRecord(Record record) throws RecordStatus {
+        if (canInsert(record)) {
+            records.put(record.rowid, record);
+            recordsSize += record.size();
+            return recordsSize;
+        } else
+            throw new RecordStatus("Not enough space to add this record");
+    }
+
+    public int removeRecord(int rowid) throws RecordStatus {
+        Record record = records.get(rowid);
+        if (record != null) {
+            recordsSize -= record.size();
+            return record.size();
+        } else {
+            throw new RecordStatus("Record " + rowid + " not found in page ");
+        }
+    }
+
+    public int updateRecord(int rowid, Record record) throws RecordStatus {
+        if (records.containsKey(rowid)) {
+            Record old = records.get(rowid);
+            recordsSize -= old.size();
+            records.put(rowid, record);
+            recordsSize += record.size();
+
+            return recordsSize;
+        } else {
+            throw new RecordStatus("Record " + rowid + " not found in page ");
+        }
+    }
+
+    public ByteBuffer serialize() {
         ByteBuffer buf = ByteBuffer.allocate(pageSize);
         buf.clear();
         buf.putInt(number);
         buf.put(type);
-        buf.putInt(numberOfRecords);
+        buf.putInt(records.size()); // number of records
         buf.putInt(previous);
         buf.putInt(next);
-        buf.put(data);
+
+        records.forEach((k, v) -> {
+            ByteBuffer payload = v.serialize();
+            if (buf.position() + payload.capacity() < buf.capacity())
+                buf.put(v.serialize());
+            else
+                throw new IllegalStateException("You are trying to write more data than page can hold!");
+        });
+
         buf.flip();
         return buf;
 
     }
+
 
     @Override
     public int compareTo(Integer o) {

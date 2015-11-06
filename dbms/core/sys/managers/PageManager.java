@@ -2,6 +2,7 @@ package core.sys.managers;
 
 import core.sys.descriptive.Page;
 import core.sys.exceptions.DBStatus;
+import core.sys.exceptions.SQLError;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -19,7 +20,7 @@ class PageManager {
         this.file = f;
     }
 
-    public Page readPage(int n) throws IOException {
+    public Page readPage(int n) throws IOException, SQLError {
         if (n > DBManager.totalPages)
             throw new IOException("WRITE PAGE ERROR: page number " + n + " > total: " + DBManager.totalPages);
 
@@ -44,5 +45,4 @@ class PageManager {
         writePage(p);
         return p;
     }
-
 }

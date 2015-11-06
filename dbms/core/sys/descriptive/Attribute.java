@@ -1,5 +1,6 @@
 package core.sys.descriptive;
 
+import core.sys.exceptions.SQLError;
 import core.sys.util.Misc;
 
 import java.nio.ByteBuffer;
@@ -13,34 +14,42 @@ public class Attribute {
     /**
      * FLAGS
      **/
-    public static byte F_NN = 1;        // not null.      If set -- raise an exception while inserting null
-    public static byte F_PK = 2;        // primary key.   If set -- attribute is Not Null and AutoIncrement
-    public static byte F_FK = 4;        // foreign key.   If set -- it points to the tabledescriptor name|attribute name
-    public static byte F_DV = 8;        // default value. If set -- defaultValue is set
-    public static byte F_UQ = 16;       // unique value
-    public static byte F_AI = 32;       // auto increment
+    public static final byte F_NN = 1;        // not null.      If set -- raise an exception while inserting null
+    public static final byte F_PK = 2;        // primary key.   If set -- attribute is Not Null and AutoIncrement
+    public static final byte F_FK = 4;        // foreign key.   If set -- it points to the tabledescriptor name.attribute name
+    public static final byte F_DV = 8;        // default value. If set -- defaultValue is set
+    public static final byte F_UQ = 16;       // unique value
+    public static final byte F_AI = 32;       // auto increment
+    public static final byte T_INT = 1;
+    public static final byte T_FLOAT = 2;
+    public static final byte T_TEXT = 3;
+    public static final byte T_BYTE = 4;
+    public static final byte T_SHORT = 5;
     String name;
     /**
-     * 0 - Integer
-     * 1 - Float
-     * 2 - String
-     * 3 - Byte
+     * 1 - Integer
+     * 2 - Float
+     * 3 - String
+     * 4 - Bytes
+     * 5 - Short
      */
     byte type;
+
     /**
      * Possible flags.
      */
     byte flags = 0;
     // default value is present ONLY if flag F_DV is present!
     byte[] defaultValue;
+
     /**
      * Present ONLY if flag F_FK is present!
      * tablename.attributename
      */
     String fk;
 
-    Attribute(String name) {
-        this.name = name;
+    public Attribute(String name) throws SQLError {
+        setName(name);
     }
 
     Attribute() {
@@ -54,18 +63,21 @@ public class Attribute {
 
         if (a.hasFlag(F_DV)) {
             switch (a.type) {
-                case 0:
-                    a.defaultValue = new byte[4];
-                    break;
                 case 1:
                     a.defaultValue = new byte[4];
                     break;
                 case 2:
+                    a.defaultValue = new byte[4];
+                    break;
+                case 3:
                     short size = b.getShort();
                     a.defaultValue = new byte[size];
                     break;
-                case 3:
+                case 4:
                     a.defaultValue = new byte[1];
+                    break;
+                case 5:
+                    a.defaultValue = new byte[2];
                     break;
             }
             b.get(a.defaultValue);
@@ -78,13 +90,17 @@ public class Attribute {
         return a;
     }
 
-    public void setName(String n) {
-        this.name = n;
+    public void setName(String n) throws SQLError {
+        if (n.matches("[a-z0-9A-Z_\\-]{1,24}")) {
+            this.name = n;
+        } else {
+            throw new SQLError("Incorrect attribute name");
+        }
     }
 
-    public void setType(byte type) throws Exception {
+    public void setType(byte type) throws SQLError {
         if (type >= 0 && type <= 3) this.type = type;
-        else throw new Exception("Wrong type!");
+        else throw new SQLError("Wrong type!");
     }
 
     public void setDefaultValue(byte[] dv) {
