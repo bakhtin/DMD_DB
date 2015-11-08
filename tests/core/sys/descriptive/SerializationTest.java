@@ -53,7 +53,7 @@ public class SerializationTest {
         if (r.type != rc.type) throw new Exception("RECORD: types are not equal");
         if (r.rowid != rc.rowid) throw new Exception("RECORD: rowids are not equal");
 
-        if (r.type == Record.T_OTUPLE) {
+        if (r.type == Record.T_OVERFLOW_TUPLE) {
             if (r.backward_overflow != rc.backward_overflow)
                 throw new Exception("RECORD: backward overflows are not equal");
             if (r.forward_overfow != rc.forward_overfow)

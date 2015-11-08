@@ -12,11 +12,11 @@ import java.nio.ByteBuffer;
 public class Row implements Comparable<Row> {
     Object[] attrs;
 
-    private int index = 0;
+    private int[] pk;
 
-    public Row(Object[] attrs, int index) {
+    public Row(Object[] attrs, int[] index) {
         this.attrs = attrs;
-        this.index = index;
+        this.pk = index;
     }
 
     Row() {
@@ -53,9 +53,25 @@ public class Row implements Comparable<Row> {
         return row;
     }
 
+    public int getPkLength() {
+        return pk.length;
+    }
+
+    public Object getPk() {
+        if (pk.length == 1) {
+            return this.attrs[0];
+        } else {
+            String ind = "";
+            for (int i = 0; i < pk[i]; i++) {
+                ind += attrs[i].toString() + (char) 0;
+            }
+            return ind;
+        }
+    }
+
     @Override
     public int compareTo(Row o) {
-        return ((Comparable) attrs[index]).compareTo(o.attrs[index]);
+        return ((Comparable) getPk()).compareTo(o.getPk());
     }
 
     public ByteBuffer serialize() throws Exception {

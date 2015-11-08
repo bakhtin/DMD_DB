@@ -119,8 +119,8 @@ public class Page implements Comparable<Integer> {
 
         records.forEach((k, v) -> {
             ByteBuffer payload = v.serialize();
-            if (buf.position() + payload.capacity() < buf.capacity())
-                buf.put(v.serialize());
+            if (buf.position() + payload.capacity() <= buf.capacity())
+                buf.put(payload);
             else
                 throw new IllegalStateException("You are trying to write more data than page can hold!");
         });

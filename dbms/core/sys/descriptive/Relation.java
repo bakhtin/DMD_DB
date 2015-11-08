@@ -1,7 +1,7 @@
 package core.sys.descriptive;
 
-import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.BiConsumer;
 
 /**
  * @author Bogdan Vaneev
@@ -9,7 +9,7 @@ import java.util.TreeMap;
  *         11/8/2015
  */
 public class Relation {
-    Map<Integer, Row> rows = new TreeMap<>();
+    TreeMap<Integer, Row> rows = new TreeMap<>();
 
     public void addRow(int rowid, Row row) {
         this.rows.put(rowid, row);
@@ -21,5 +21,13 @@ public class Relation {
 
     public Row getRow(int rowid) {
         return this.rows.get(rowid);
+    }
+
+    public void forEach(BiConsumer<Integer, Row> b) {
+        rows.forEach(b);
+    }
+
+    public int size() {
+        return rows.size();
     }
 }

@@ -14,9 +14,7 @@ public class Record implements Comparable<Integer> {
     public static final byte T_TUPLE = 1;
     public static final byte T_INODE = 2;
     public static final byte T_LNODE = 3;
-    public static final byte T_OTUPLE = 4;
-
-    /** HEADER **/
+    public static final byte T_OVERFLOW_TUPLE = 4;
     /**
      * 0 - table
      * 1 - tuple
@@ -25,26 +23,24 @@ public class Record implements Comparable<Integer> {
      * 4 - overflow tuple
      */
     byte type;
-
     /**
      * Unique record id
      */
     int rowid;
-
     /**
      * Suppose we are trying to add a record with size = 100 to page with free space 50.
      * Page1: first 50 bytes: forward overflow: pointer to page 2
      * Page2: second 50 bytes: backward overflow: pointer to page 1
      * 0 means there is no overflow
-     *
+     * <p>
      * THEY APPEARS ONLY WHEN PAGE TYPE = overflow tuple
      */
     int backward_overflow = 0;
-    int forward_overfow = 0;
 
-    /** BODY **/
+    /** HEADER **/
+    int forward_overfow = 0;
     /**
-     * Real length of the record
+     * Real size of the record
      */
     int record_length;
     byte[] payload;
@@ -52,9 +48,18 @@ public class Record implements Comparable<Integer> {
     Record() {
     }
 
+    /** BODY **/
     public Record(byte type, int rowid) throws SQLError {
         this.setType(type);
         this.setRowid(rowid);
+    }
+
+    public static byte getHeaderSize() {
+        return (byte) 9;
+    }
+
+    public static byte getOverflowHeaderSize() {
+        return (byte) (9 + 8);
     }
 
     public static Record deserialize(ByteBuffer buf) throws SQLError {
@@ -62,7 +67,7 @@ public class Record implements Comparable<Integer> {
         r.type = buf.get();
         r.rowid = buf.getInt();
 
-        if (r.type == T_OTUPLE) {
+        if (r.type == T_OVERFLOW_TUPLE) {
             r.backward_overflow = buf.getInt();
             r.forward_overfow = buf.getInt();
         }
@@ -82,8 +87,17 @@ public class Record implements Comparable<Integer> {
         }
     }
 
+    public int getRowid() {
+        return rowid;
+    }
+
+    public void setRowid(int rowid) throws SQLError {
+        if (rowid > 0) this.rowid = rowid;
+        else throw new SQLError("Wrong record rowid");
+    }
+
     public int size() {
-        return 9 + payload.length + (type == T_OTUPLE ? 8 : 0);
+        return getHeaderSize() + payload.length;
     }
 
     public ByteBuffer serialize() {
@@ -93,7 +107,7 @@ public class Record implements Comparable<Integer> {
         buf.put(type);
         buf.putInt(rowid);
 
-        if (type == T_OTUPLE) {
+        if (type == T_OVERFLOW_TUPLE) {
             buf.putInt(backward_overflow);
             buf.putInt(forward_overfow);
         }
@@ -115,11 +129,6 @@ public class Record implements Comparable<Integer> {
     public void setType(byte type) throws SQLError {
         if (type >= 0 && type <= 3) this.type = type;
         else throw new SQLError("Wrong record type");
-    }
-
-    public void setRowid(int rowid) throws SQLError {
-        if (rowid > 0) this.rowid = rowid;
-        else throw new SQLError("Wrong record rowid");
     }
 
     public void setBackward_overflow(int bo) throws SQLError {

@@ -1,8 +1,6 @@
 package core.sys.managers;
 
-import core.sys.descriptive.Attribute;
-import core.sys.descriptive.Page;
-import core.sys.descriptive.TableSchema;
+import core.sys.descriptive.*;
 import core.sys.exceptions.DBStatus;
 import core.sys.exceptions.RecordStatus;
 import core.sys.exceptions.SQLError;
@@ -17,6 +15,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.List;
 
 /**
  * @author Bogdan Vaneev
@@ -26,10 +25,15 @@ import java.io.RandomAccessFile;
 public class DBManager {
     static int totalPages = 0;
     public SQL cursor;
+
     String dbpath;
     RandomAccessFile file;
     File db;
+
+    PageManager pageManager;
     RecordManager recordManager;
+    CacheManager cacheManager;
+    TreeManager treeManager;
 
     public DBManager(String path) throws RecordStatus, SQLError, IOException {
         this.dbpath = path;
@@ -93,7 +97,11 @@ public class DBManager {
             throw new DBStatus(DBStatus.DB_ACCESS_ERROR); // can't get access
         }
 
-        recordManager = new RecordManager(file);
+        pageManager = new PageManager(file);
+        cacheManager = new CacheManager(pageManager);
+        recordManager = new RecordManager(pageManager);
+        treeManager = new TreeManager(recordManager.pageManager);
+
         cursor = new SQL();
 
         throw stat;
@@ -101,6 +109,10 @@ public class DBManager {
 
     private void createDB() throws IOException, SQLError, RecordStatus {
         recordManager.pageManager.allocatePage();
+    }
+
+    public void printPages() {
+
     }
 
     public class SQL {
@@ -486,19 +498,40 @@ public class DBManager {
                 }
             }
 
+            Relation table = new Relation();
+
             if (pStmt.getValues() != null) {
                 System.out.println("values:");
                 for (int i = 0; i < pStmt.getValues().size(); i++) {
                     TMultiTarget mt = pStmt.getValues().getMultiTarget(i);
+
+                    Object[] row = new Object[mt.getColumnList().size()];
+
                     for (int j = 0; j < mt.getColumnList().size(); j++) {
                         System.out.print("\t" + mt.getColumnList().getResultColumn(j).toString());
+                        row[j] = mt.getColumnList().getResultColumn(j).toString();
                     }
+
+                    table.addRow(i + 1, new Row(row, new int[]{0}));
                     System.out.println();
                 }
             }
 
             if (pStmt.getSubQuery() != null) {
                 analyzeSelectStmt(pStmt.getSubQuery());
+            }
+
+            try {
+                List<Page> pages = treeManager.bulkInsert(table);
+                for (Page p : pages) {
+                    pageManager.writePage(p);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } catch (RecordStatus recordStatus) {
+                recordStatus.printStackTrace();
+            } catch (SQLError sqlError) {
+                sqlError.printStackTrace();
             }
         }
 

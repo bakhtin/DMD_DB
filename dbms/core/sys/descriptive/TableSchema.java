@@ -14,6 +14,7 @@ public class TableSchema {
     public Attribute[] attributes;
     String tbl_name;
     int recordsTotal = 0;
+    int autoIncrement = 0;
 
     TableSchema() {
     }
@@ -31,6 +32,7 @@ public class TableSchema {
         TableSchema t = new TableSchema();
         t.tbl_name = Misc.parseStr(b);
         t.recordsTotal = b.getInt();
+        t.autoIncrement = b.getInt();
 
         short attrn = b.getShort();
         t.attributes = new Attribute[attrn];
@@ -56,7 +58,7 @@ public class TableSchema {
     public ByteBuffer serialize() {
         byte[] tbl = tbl_name.getBytes();
 
-        int size = 2 + tbl.length + 4 + 4 + 2; // recordsTotal(int) + rootpage(int) + attrs.length(short)
+        int size = 2 + tbl.length + 4 + 4 + 2 + 4;
 
         ByteBuffer[] attrs = new ByteBuffer[attributes.length];
         for (int i = 0; i < attributes.length; i++) {
@@ -70,6 +72,7 @@ public class TableSchema {
         // PUT
         Misc.addStr(b, tbl_name);
         b.putInt(recordsTotal);
+        b.putInt(autoIncrement);
 
         b.putShort((short) attrs.length);
         for (int i = 0; i < attributes.length; i++) {

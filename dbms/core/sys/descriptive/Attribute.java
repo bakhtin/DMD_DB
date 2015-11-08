@@ -92,6 +92,15 @@ public class Attribute {
         return a;
     }
 
+    public static int getType(String type) {
+        type = type.toLowerCase();
+        if (type.matches(".*(?:int).*")) return T_INT;
+        if (type.matches(".*(?:varchar|text).*")) return T_TEXT;
+        if (type.matches(".*(?:float).*")) return T_FLOAT;
+        if (type.matches(".*(?:short).*")) return T_SHORT;
+        return T_BYTE;
+    }
+
     public ByteBuffer serialize() {
         byte[] nameb = this.name.getBytes();
         byte[] fkb;
@@ -126,16 +135,6 @@ public class Attribute {
         return buf;
     }
 
-
-    public static int getType(String type) {
-        type = type.toLowerCase();
-        if (type.matches(".*(?:int).*")) return T_INT;
-        if (type.matches(".*(?:varchar|text).*")) return T_TEXT;
-        if (type.matches(".*(?:float).*")) return T_FLOAT;
-        if (type.matches(".*(?:short).*")) return T_SHORT;
-        return T_BYTE;
-    }
-
     public void removeFlag(byte flag) {
         if (this.hasFlag(flag)) this.flags ^= flag;
     }
@@ -161,7 +160,7 @@ public class Attribute {
     public void setFlag(byte flag) {
         // if flag = PK, then it has to be Not Null and AutoIncrement
         if (flag == F_PK) flag |= F_NN | F_UQ;
-        if (flag == F_FK || flag == F_UQ) flag |= F_NN;
+        if (flag == F_FK) flag |= F_NN;
 
 
         this.flags = (byte) (flags | flag);
