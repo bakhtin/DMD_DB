@@ -9,10 +9,31 @@ import java.nio.ByteBuffer;
  *         Innopolis University
  *         10/27/2015
  */
-public class Row {
+public class Row implements Comparable<Row> {
     Object[] attrs;
 
-    public static Row deserialize(ByteBuffer b, Table t) {
+    private int comparableIndex = 0;
+
+    public Row(Object[] attrs, int comparableIndex) {
+        this.attrs = attrs;
+        this.comparableIndex = comparableIndex;
+    }
+
+    Row() {
+    }
+
+    @Override
+    public int compareTo(Row o) {
+        return ((Comparable) attrs[comparableIndex]).compareTo(o.attrs[comparableIndex]);
+    }
+
+
+    @Override
+    public int compareTo(Row o) {
+        return ((Comparable) attrs[comparableIndex]).compareTo(o.attrs[comparableIndex]);
+    }
+
+    public static Row deserialize(ByteBuffer b, TableSchema t) {
         Row row = new Row();
 
         row.attrs = new ByteBuffer[t.attributes.length];
@@ -65,4 +86,6 @@ public class Row {
         }
         return b;
     }
+
+
 }

@@ -1,6 +1,8 @@
 package core.sys.descriptive;
 
+import core.sys.exceptions.RecordStatus;
 import core.sys.exceptions.SQLError;
+import core.sys.managers.RecordManager;
 import core.sys.util.Misc;
 import org.junit.Test;
 
@@ -14,20 +16,20 @@ import java.nio.ByteBuffer;
 public class SerializationTest {
     @Test
     public void testTable() throws Exception, SQLError {
-        Table t = new Table();
+        TableSchema t = new TableSchema();
         t.rootpage = 30;
         t.recordsTotal = 100500;
         t.tbl_name = "table";
 
         t.attributes = new Attribute[3];
-        t.attributes[0] = new Attribute("attr1");
-        t.attributes[1] = new Attribute("attr2");
-        t.attributes[2] = new Attribute("attr3");
+        t.attributes[0] = new Attribute("attr1", Attribute.T_SHORT);
+        t.attributes[1] = new Attribute("attr2", Attribute.T_SHORT);
+        t.attributes[2] = new Attribute("attr3", Attribute.T_SHORT);
         t.attributes[2].setFlag(Attribute.F_AI);
 
         ByteBuffer b = t.serialize();
 
-        Table tc = Table.deserialize(b);
+        TableSchema tc = TableSchema.deserialize(b);
 
         if (t.rootpage != tc.rootpage) throw new Exception("TABLE: rootpage");
         if (t.recordsTotal != tc.recordsTotal) throw new Exception("TABLE: recordsTotal");
@@ -61,14 +63,21 @@ public class SerializationTest {
         if (!Misc.compareBytes(r.payload, rc.payload)) throw new Exception("RECORD: payloads are not equal");
     }
 
+
     @Test
-    public void testPage() throws Exception {
+    public void testPage() throws Exception, SQLError, RecordStatus {
         Page p = new Page(15);
         p.previous = 50;
         p.next = 61;
-        p.data.put(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9});
-        p.type = 3;
-        p.numberOfRecords = 100500;
+
+        TableSchema t_freespace = new TableSchema("freespace", 2);
+
+        t_freespace.attributes[0] = new Attribute("page_id", Attribute.T_TEXT);
+        t_freespace.attributes[1] = new Attribute("free", Attribute.T_SHORT);
+
+        p.addRecord(RecordManager.makeRecord(t_freespace, 1));
+
+        p.type = Page.T_FREE;
 
         ByteBuffer b = p.serialize();
 
@@ -76,19 +85,18 @@ public class SerializationTest {
 
         if (p.number != pc.number) throw new Exception("PAGE: page numbers are not equal");
         if (p.type != pc.type) throw new Exception("PAGE: page types are not equal");
-        if (p.numberOfRecords != pc.numberOfRecords) throw new Exception("PAGE: number of records are not equal");
         if (p.previous != pc.previous) throw new Exception("PAGE: previous are not equal");
         if (p.next != pc.next) throw new Exception("PAGE: next are not equal");
-        if (p.data.equals(pc.data)) throw new Exception("PAGE: data are not equal");
+        if (p.records.equals(pc.records)) throw new Exception("PAGE: data are not equal");
     }
 
 
     @Test
     public void testAttribute() throws Exception, SQLError {
-        Attribute a = new Attribute("hello");
+        Attribute a = new Attribute("hello", Attribute.T_SHORT);
         a.setDefaultValue(new byte[]{1, 2, 3, 4});
         a.setFlag(Attribute.F_PK);
-        a.setType((byte) 0);
+        a.setType(Attribute.T_INT);
 
         ByteBuffer b = a.serialize();
 

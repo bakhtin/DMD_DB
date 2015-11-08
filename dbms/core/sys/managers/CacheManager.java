@@ -1,6 +1,7 @@
 package core.sys.managers;
 
 import core.sys.descriptive.Page;
+import core.sys.exceptions.SQLError;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -42,7 +43,7 @@ public class CacheManager {
      * @param n - page number
      * @return - Page
      */
-    public Page get(Integer n) throws IOException {
+    public Page get(Integer n) throws IOException, SQLError {
         if (cache.containsKey(n)) {
             hit++;
             return cache.get(n);

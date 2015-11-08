@@ -60,7 +60,7 @@ public class Record implements Comparable<Integer> {
         r.backward_overflow = buf.getInt();
         r.forward_overfow = buf.getInt();
         r.record_length = buf.getInt();
-        r.payload = new byte[buf.capacity() - buf.position()];
+        r.payload = new byte[buf.limit() - buf.position()];
         buf.get(r.payload);
 
         return r;
@@ -102,7 +102,7 @@ public class Record implements Comparable<Integer> {
     }
 
     public void setType(byte type) throws SQLError {
-        if (type >= 1 && type <= 3) this.type = type;
+        if (type >= 0 && type <= 3) this.type = type;
         else throw new SQLError("Wrong record type");
     }
 

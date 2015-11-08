@@ -21,7 +21,7 @@ public class Page implements Comparable<Integer> {
     public static final byte T_TUPLE = 1;
     public static final byte T_INODE = 2;
     public static final byte T_LNODE = 3;
-
+    public Map<Integer, Record> records = new HashMap<>(500);
     /**
      * HEADER
      **/
@@ -32,17 +32,14 @@ public class Page implements Comparable<Integer> {
      * 3 - page with b+tree leaf nodes
      */
     byte type;
-
     // linked pointers to previous and next page
     int previous = 0;
     int next = 0;
-
     /**
      * END OF HEADER
      **/
 
     int recordsSize = 0; // not written in the file
-    Map<Integer, Record> records = new HashMap<>(500);
 
 
 
@@ -64,6 +61,14 @@ public class Page implements Comparable<Integer> {
             p.records.put(r.rowid, r);
         }
         return p;
+    }
+
+    public short free() {
+        return (short) (dataSize - recordsSize);
+    }
+
+    public short recordsSize() {
+        return (short) recordsSize;
     }
 
     public boolean canInsert(Record record) {

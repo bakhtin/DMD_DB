@@ -20,11 +20,16 @@ public class Attribute {
     public static final byte F_DV = 8;        // default value. If set -- defaultValue is set
     public static final byte F_UQ = 16;       // unique value
     public static final byte F_AI = 32;       // auto increment
+
+    /**
+     * TYPES
+     */
     public static final byte T_INT = 1;
     public static final byte T_FLOAT = 2;
     public static final byte T_TEXT = 3;
     public static final byte T_BYTE = 4;
     public static final byte T_SHORT = 5;
+
     String name;
     /**
      * 1 - Integer
@@ -50,6 +55,11 @@ public class Attribute {
 
     public Attribute(String name) throws SQLError {
         setName(name);
+    }
+
+    public Attribute(String name, String type) throws SQLError {
+        setName(name);
+        setType(type);
     }
 
     Attribute() {
@@ -90,6 +100,19 @@ public class Attribute {
         return a;
     }
 
+    public static int getType(String type) {
+        type = type.toLowerCase();
+        if (type.matches(".*(?:int).*")) return T_INT;
+        if (type.matches(".*(?:varchar|text).*")) return T_TEXT;
+        if (type.matches(".*(?:float).*")) return T_FLOAT;
+        if (type.matches(".*(?:short).*")) return T_SHORT;
+        return T_BYTE;
+    }
+
+    public void removeFlag(byte flag) {
+        if (this.hasFlag(flag)) this.flags ^= flag;
+    }
+
     public void setName(String n) throws SQLError {
         if (n.matches("[a-z0-9A-Z_\\-]{1,24}")) {
             this.name = n;
@@ -99,7 +122,7 @@ public class Attribute {
     }
 
     public void setType(byte type) throws SQLError {
-        if (type >= 0 && type <= 3) this.type = type;
+        if (type >= 1 && type <= 5) this.type = type;
         else throw new SQLError("Wrong type!");
     }
 

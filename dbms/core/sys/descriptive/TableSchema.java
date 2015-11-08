@@ -10,22 +10,26 @@ import java.nio.ByteBuffer;
  *         Innopolis University
  *         10/24/2015
  */
-public class Table {
+public class TableSchema {
     public Attribute[] attributes;
     String tbl_name;
     int recordsTotal = 0;
     int rootpage = 0;
 
-    Table() {
+    TableSchema() {
     }
 
-    public Table(String name, int attrn) throws SQLError {
+    public TableSchema(String name) throws SQLError {
+        setName(name);
+    }
+
+    public TableSchema(String name, int attrn) throws SQLError {
         setName(name);
         attributes = new Attribute[attrn];
     }
 
-    public static Table deserialize(ByteBuffer b) {
-        Table t = new Table();
+    public static TableSchema deserialize(ByteBuffer b) {
+        TableSchema t = new TableSchema();
         t.tbl_name = Misc.parseStr(b);
 
         t.recordsTotal = b.getInt();
