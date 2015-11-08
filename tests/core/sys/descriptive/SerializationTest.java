@@ -43,8 +43,7 @@ public class SerializationTest {
     public void testRecord() throws Exception, SQLError {
         Record r = new Record();
         r.type = 1;
-        r.payload = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9};
-        r.record_length = 100;
+        r.setPayload(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9});
         r.forward_overfow = 15;
         r.backward_overflow = 1000;
         r.rowid = 100500;

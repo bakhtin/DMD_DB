@@ -68,7 +68,7 @@ public class Record implements Comparable<Integer> {
         }
 
         r.record_length = buf.getInt();
-        r.payload = new byte[buf.limit() - buf.position()];
+        r.payload = new byte[r.record_length];
         buf.get(r.payload);
 
         return r;
