@@ -2,7 +2,6 @@ package core.sys.descriptive;
 
 import core.sys.exceptions.RecordStatus;
 import core.sys.exceptions.SQLError;
-import core.sys.managers.RecordManager;
 import core.sys.util.Misc;
 import org.junit.Test;
 
@@ -56,9 +55,13 @@ public class SerializationTest {
 
         if (r.type != rc.type) throw new Exception("RECORD: types are not equal");
         if (r.rowid != rc.rowid) throw new Exception("RECORD: rowids are not equal");
-        if (r.backward_overflow != rc.backward_overflow)
-            throw new Exception("RECORD: backward overflows are not equal");
-        if (r.forward_overfow != rc.forward_overfow) throw new Exception("RECORD: forward overflows are not equal");
+
+        if (r.type == Record.T_OTUPLE) {
+            if (r.backward_overflow != rc.backward_overflow)
+                throw new Exception("RECORD: backward overflows are not equal");
+            if (r.forward_overfow != rc.forward_overfow)
+                throw new Exception("RECORD: forward overflows are not equal");
+        }
         if (r.record_length != rc.record_length) throw new Exception("RECORD: record lengths are not equal");
         if (!Misc.compareBytes(r.payload, rc.payload)) throw new Exception("RECORD: payloads are not equal");
     }
@@ -70,18 +73,20 @@ public class SerializationTest {
         p.previous = 50;
         p.next = 61;
 
-        TableSchema t_freespace = new TableSchema("freespace", 2);
+        Record a = new Record(Record.T_TUPLE, 1);
+        a.setPayload(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9});
 
-        t_freespace.attributes[0] = new Attribute("page_id", Attribute.T_TEXT);
-        t_freespace.attributes[1] = new Attribute("free", Attribute.T_SHORT);
+        Record b = new Record(Record.T_TUPLE, 2);
+        b.setPayload(new byte[]{9, 8, 7, 6, 5, 4, 2, 1});
 
-        p.addRecord(RecordManager.makeRecord(t_freespace, 1));
+        p.addRecord(a);
+        p.addRecord(b);
 
-        p.type = Page.T_FREE;
+        p.type = Page.T_TUPLE;
 
-        ByteBuffer b = p.serialize();
+        ByteBuffer buf = p.serialize();
 
-        Page pc = Page.deserialize(b);
+        Page pc = Page.deserialize(buf);
 
         if (p.number != pc.number) throw new Exception("PAGE: page numbers are not equal");
         if (p.type != pc.type) throw new Exception("PAGE: page types are not equal");

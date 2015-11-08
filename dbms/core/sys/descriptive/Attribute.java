@@ -59,6 +59,11 @@ public class Attribute {
 
     public Attribute(String name, String type) throws SQLError {
         setName(name);
+        setType((byte) getType(type));
+    }
+
+    public Attribute(String name, byte type) throws SQLError {
+        setName(name);
         setType(type);
     }
 

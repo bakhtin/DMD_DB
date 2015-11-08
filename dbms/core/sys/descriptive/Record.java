@@ -14,6 +14,7 @@ public class Record implements Comparable<Integer> {
     public static final byte T_TUPLE = 1;
     public static final byte T_INODE = 2;
     public static final byte T_LNODE = 3;
+    public static final byte T_OTUPLE = 4;
 
     /** HEADER **/
     /**
@@ -21,6 +22,7 @@ public class Record implements Comparable<Integer> {
      * 1 - tuple
      * 2 - internal b+tree node
      * 3 - leaf b+tree node
+     * 4 - overflow tuple
      */
     byte type;
 
@@ -34,6 +36,8 @@ public class Record implements Comparable<Integer> {
      * Page1: first 50 bytes: forward overflow: pointer to page 2
      * Page2: second 50 bytes: backward overflow: pointer to page 1
      * 0 means there is no overflow
+     *
+     * THEY APPEARS ONLY WHEN PAGE TYPE = overflow tuple
      */
     int backward_overflow = 0;
     int forward_overfow = 0;
@@ -57,8 +61,12 @@ public class Record implements Comparable<Integer> {
         Record r = new Record();
         r.type = buf.get();
         r.rowid = buf.getInt();
-        r.backward_overflow = buf.getInt();
-        r.forward_overfow = buf.getInt();
+
+        if (r.type == T_OTUPLE) {
+            r.backward_overflow = buf.getInt();
+            r.forward_overfow = buf.getInt();
+        }
+
         r.record_length = buf.getInt();
         r.payload = new byte[buf.limit() - buf.position()];
         buf.get(r.payload);
@@ -75,7 +83,7 @@ public class Record implements Comparable<Integer> {
     }
 
     public int size() {
-        return 17 + payload.length;
+        return 9 + payload.length + (type == T_OTUPLE ? 8 : 0);
     }
 
     public ByteBuffer serialize() {
@@ -84,8 +92,11 @@ public class Record implements Comparable<Integer> {
         // put header
         buf.put(type);
         buf.putInt(rowid);
-        buf.putInt(backward_overflow);
-        buf.putInt(forward_overfow);
+
+        if (type == T_OTUPLE) {
+            buf.putInt(backward_overflow);
+            buf.putInt(forward_overfow);
+        }
 
         // put body
         buf.putInt(record_length);

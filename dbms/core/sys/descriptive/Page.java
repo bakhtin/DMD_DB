@@ -41,7 +41,8 @@ public class Page implements Comparable<Integer> {
 
     int recordsSize = 0; // not written in the file
 
-
+    Page() {
+    }
 
     public Page(int n) {
         number = n;
@@ -49,10 +50,10 @@ public class Page implements Comparable<Integer> {
     }
 
     public static Page deserialize(ByteBuffer buf) throws SQLError {
-        Page p = new Page(0);
+        Page p = new Page();
         p.number = buf.getInt();
         p.type = buf.get();
-        int numberOfRecords = buf.getInt();
+        byte numberOfRecords = buf.get();
         p.previous = buf.getInt();
         p.next = buf.getInt();
 
@@ -112,7 +113,7 @@ public class Page implements Comparable<Integer> {
         buf.clear();
         buf.putInt(number);
         buf.put(type);
-        buf.putInt(records.size()); // number of records
+        buf.put((byte) records.size()); // number of records
         buf.putInt(previous);
         buf.putInt(next);
 
@@ -128,7 +129,6 @@ public class Page implements Comparable<Integer> {
         return buf;
 
     }
-
 
     @Override
     public int compareTo(Integer o) {

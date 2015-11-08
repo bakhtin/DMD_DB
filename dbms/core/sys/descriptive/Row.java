@@ -22,17 +22,6 @@ public class Row implements Comparable<Row> {
     Row() {
     }
 
-    @Override
-    public int compareTo(Row o) {
-        return ((Comparable) attrs[comparableIndex]).compareTo(o.attrs[comparableIndex]);
-    }
-
-
-    @Override
-    public int compareTo(Row o) {
-        return ((Comparable) attrs[comparableIndex]).compareTo(o.attrs[comparableIndex]);
-    }
-
     public static Row deserialize(ByteBuffer b, TableSchema t) {
         Row row = new Row();
 
@@ -62,6 +51,11 @@ public class Row implements Comparable<Row> {
         }
 
         return row;
+    }
+
+    @Override
+    public int compareTo(Row o) {
+        return ((Comparable) attrs[comparableIndex]).compareTo(o.attrs[comparableIndex]);
     }
 
     public ByteBuffer serialize() throws Exception {
