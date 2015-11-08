@@ -41,9 +41,7 @@ public class Misc {
      * @param s - String
      */
     public static void addStr(ByteBuffer b, String s) {
-        byte[] str = s.getBytes();
-        b.putShort((short) str.length);
-        b.put(str);
+        addBytes(b, s.getBytes());
     }
 
     /**

@@ -40,6 +40,8 @@ public class Attribute {
      */
     byte type;
 
+    int rootpage = 0;
+
     /**
      * Possible flags.
      */
@@ -77,33 +79,53 @@ public class Attribute {
         a.flags = b.get();
 
         if (a.hasFlag(F_DV)) {
-            switch (a.type) {
-                case 1:
-                    a.defaultValue = new byte[4];
-                    break;
-                case 2:
-                    a.defaultValue = new byte[4];
-                    break;
-                case 3:
-                    short size = b.getShort();
-                    a.defaultValue = new byte[size];
-                    break;
-                case 4:
-                    a.defaultValue = new byte[1];
-                    break;
-                case 5:
-                    a.defaultValue = new byte[2];
-                    break;
-            }
-            b.get(a.defaultValue);
+            a.defaultValue = Misc.parseBytes(b);
         }
 
         if (a.hasFlag(F_FK)) {
             a.fk = Misc.parseStr(b);
         }
 
+        if (a.hasFlag(F_UQ))
+            a.rootpage = b.getInt();
+
         return a;
     }
+
+    public ByteBuffer serialize() {
+        byte[] nameb = this.name.getBytes();
+        byte[] fkb;
+
+        int size = 2 + nameb.length + 1 + 1 + (this.hasFlag(F_UQ) ? 4 : 0);
+
+        if (this.hasFlag(F_FK)) {
+            fkb = this.fk.getBytes();
+            size += 2 + fkb.length;
+        }
+
+        if (this.hasFlag(F_DV)) {
+            size += 2 + defaultValue.length;
+        }
+
+        ByteBuffer buf = ByteBuffer.allocate(size);
+
+        Misc.addStr(buf, name);
+        buf.put(type);
+        buf.put(flags);
+
+        if (this.hasFlag(F_DV))
+            Misc.addBytes(buf, defaultValue);
+
+        if (this.hasFlag(F_FK))
+            Misc.addStr(buf, fk);
+
+        if (this.hasFlag(F_UQ))
+            buf.putInt(rootpage);
+
+        buf.flip();
+        return buf;
+    }
+
 
     public static int getType(String type) {
         type = type.toLowerCase();
@@ -136,10 +158,11 @@ public class Attribute {
         this.setFlag(F_DV);
     }
 
-    public void setFlag(int flag) {
+    public void setFlag(byte flag) {
         // if flag = PK, then it has to be Not Null and AutoIncrement
-        if (flag == F_PK) flag |= F_NN | F_AI;
-        if (flag == F_FK || flag == F_DV || flag == F_UQ) flag |= F_NN;
+        if (flag == F_PK) flag |= F_NN | F_UQ;
+        if (flag == F_FK || flag == F_UQ) flag |= F_NN;
+
 
         this.flags = (byte) (flags | flag);
     }
@@ -152,37 +175,5 @@ public class Attribute {
         return (flags & flag) != 0;
     }
 
-    public ByteBuffer serialize() {
-        byte[] nameb = this.name.getBytes();
-        byte[] fkb;
-
-        int size = 2 + nameb.length + 1 + 1;
-
-        if (this.fk != null) {
-            fkb = this.fk.getBytes();
-            size += fkb.length;
-        }
-
-        if (this.defaultValue != null) {
-            size += defaultValue.length;
-        }
-
-        ByteBuffer buf = ByteBuffer.allocate(size);
-        // put name
-        Misc.addStr(buf, name);
-
-        buf.put(type);
-        buf.put(flags);
-
-        if (this.hasFlag(F_DV))
-            buf.put(defaultValue);
-
-        if (this.hasFlag(F_FK))
-            Misc.addStr(buf, fk);
-
-
-        buf.flip();
-        return buf;
-    }
 
 }

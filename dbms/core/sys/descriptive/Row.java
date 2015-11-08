@@ -12,11 +12,11 @@ import java.nio.ByteBuffer;
 public class Row implements Comparable<Row> {
     Object[] attrs;
 
-    private int comparableIndex = 0;
+    private int index = 0;
 
-    public Row(Object[] attrs, int comparableIndex) {
+    public Row(Object[] attrs, int index) {
         this.attrs = attrs;
-        this.comparableIndex = comparableIndex;
+        this.index = index;
     }
 
     Row() {
@@ -55,7 +55,7 @@ public class Row implements Comparable<Row> {
 
     @Override
     public int compareTo(Row o) {
-        return ((Comparable) attrs[comparableIndex]).compareTo(o.attrs[comparableIndex]);
+        return ((Comparable) attrs[index]).compareTo(o.attrs[index]);
     }
 
     public ByteBuffer serialize() throws Exception {

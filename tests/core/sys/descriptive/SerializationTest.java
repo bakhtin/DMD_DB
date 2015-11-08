@@ -16,7 +16,6 @@ public class SerializationTest {
     @Test
     public void testTable() throws Exception, SQLError {
         TableSchema t = new TableSchema();
-        t.rootpage = 30;
         t.recordsTotal = 100500;
         t.tbl_name = "table";
 
@@ -30,7 +29,6 @@ public class SerializationTest {
 
         TableSchema tc = TableSchema.deserialize(b);
 
-        if (t.rootpage != tc.rootpage) throw new Exception("TABLE: rootpage");
         if (t.recordsTotal != tc.recordsTotal) throw new Exception("TABLE: recordsTotal");
         if (t.attributes.length != tc.attributes.length) throw new Exception("TABLE: attr len");
         for (int i = 0; i < t.attributes.length; i++) {
@@ -99,8 +97,8 @@ public class SerializationTest {
     public void testAttribute() throws Exception, SQLError {
         Attribute a = new Attribute("hello", Attribute.T_SHORT);
         a.setDefaultValue(new byte[]{1, 2, 3, 4});
-        a.setFlag(Attribute.F_PK);
-        a.setType(Attribute.T_INT);
+        a.setFlag(Attribute.F_UQ);
+        a.rootpage = 100500;
 
         ByteBuffer b = a.serialize();
 
@@ -111,5 +109,6 @@ public class SerializationTest {
         if (a.flags != ac.flags) throw new Exception("ATTR: Not equal flags");
         if (!Misc.compareBytes(a.defaultValue, ac.defaultValue)) throw new Exception("ATTR: Not equal default value");
         if (a.fk != null && a.fk.equals(ac.fk)) throw new Exception("ATTR: Not equal foreign key");
+        if (a.rootpage != ac.rootpage) throw new Exception("ATTR: Not equal rootpage");
     }
 }

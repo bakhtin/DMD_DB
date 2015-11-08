@@ -14,7 +14,6 @@ public class TableSchema {
     public Attribute[] attributes;
     String tbl_name;
     int recordsTotal = 0;
-    int rootpage = 0;
 
     TableSchema() {
     }
@@ -31,9 +30,7 @@ public class TableSchema {
     public static TableSchema deserialize(ByteBuffer b) {
         TableSchema t = new TableSchema();
         t.tbl_name = Misc.parseStr(b);
-
         t.recordsTotal = b.getInt();
-        t.rootpage = b.getInt();
 
         short attrn = b.getShort();
         t.attributes = new Attribute[attrn];
@@ -73,7 +70,6 @@ public class TableSchema {
         // PUT
         Misc.addStr(b, tbl_name);
         b.putInt(recordsTotal);
-        b.putInt(rootpage);
 
         b.putShort((short) attrs.length);
         for (int i = 0; i < attributes.length; i++) {
