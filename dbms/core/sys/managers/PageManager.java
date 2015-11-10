@@ -7,6 +7,8 @@ import core.sys.exceptions.SQLError;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * @author Bogdan Vaneev
@@ -15,6 +17,7 @@ import java.nio.ByteBuffer;
  */
 class PageManager {
     private RandomAccessFile file;
+    private Queue<Page> freelist = new LinkedList<>();
 
     public PageManager(RandomAccessFile f) throws DBStatus {
         this.file = f;
@@ -40,9 +43,20 @@ class PageManager {
         file.write(p.serialize().array());
     }
 
-    public Page allocatePage() throws IOException {
+    private Page allocatePage() throws IOException {
         Page p = new Page(DBManager.totalPages++);
         writePage(p);
         return p;
+    }
+
+    public Page getFreePage() throws IOException {
+        if (freelist.isEmpty())
+            return allocatePage();
+        else
+            return freelist.poll();
+    }
+
+    public void addFreePage(Page p) {
+        this.freelist.add(p);
     }
 }

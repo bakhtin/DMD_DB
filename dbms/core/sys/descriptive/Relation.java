@@ -1,5 +1,7 @@
 package core.sys.descriptive;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 
@@ -29,5 +31,9 @@ public class Relation {
 
     public int size() {
         return rows.size();
+    }
+
+    public Set<Map.Entry<Integer, Row>> entrySet() {
+        return rows.entrySet();
     }
 }

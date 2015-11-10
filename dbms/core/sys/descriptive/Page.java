@@ -73,7 +73,7 @@ public class Page implements Comparable<Integer> {
     }
 
     public boolean canInsert(Record record) {
-        return (record.record_length + recordsSize <= dataSize);
+        return free() >= record.size();
     }
 
     public int addRecord(Record record) throws RecordStatus {

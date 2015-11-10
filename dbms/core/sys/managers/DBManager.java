@@ -92,7 +92,7 @@ public class DBManager {
 
         // open db file
         try {
-            file = new RandomAccessFile(dbpath, "rw");
+            file = new RandomAccessFile(dbpath, "rws");
         } catch (FileNotFoundException e) {
             throw new DBStatus(DBStatus.DB_ACCESS_ERROR); // can't get access
         }
@@ -108,7 +108,8 @@ public class DBManager {
     }
 
     private void createDB() throws IOException, SQLError, RecordStatus {
-        recordManager.pageManager.allocatePage();
+        // very first (main) page
+        recordManager.pageManager.getFreePage();
     }
 
     public void printPages() {
@@ -509,10 +510,14 @@ public class DBManager {
 
                     for (int j = 0; j < mt.getColumnList().size(); j++) {
                         System.out.print("\t" + mt.getColumnList().getResultColumn(j).toString());
-                        row[j] = mt.getColumnList().getResultColumn(j).toString();
+                        try {
+                            row[j] = Integer.parseInt(mt.getColumnList().getResultColumn(j).toString());
+                        } catch (Exception e) {
+                            row[j] = mt.getColumnList().getResultColumn(j).toString();
+                        }
                     }
-
-                    table.addRow(i + 1, new Row(row, new int[]{0}));
+                    Row q = new Row(row, new int[]{0});
+                    table.addRow((Integer) q.getPk(), q);
                     System.out.println();
                 }
             }
@@ -524,7 +529,7 @@ public class DBManager {
             try {
                 List<Page> pages = treeManager.bulkInsert(table);
                 for (Page p : pages) {
-                    pageManager.writePage(p);
+                    cacheManager.put(p);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

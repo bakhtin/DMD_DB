@@ -36,9 +36,8 @@ public class Record implements Comparable<Integer> {
      * THEY APPEARS ONLY WHEN PAGE TYPE = overflow tuple
      */
     int backward_overflow = 0;
-
-    /** HEADER **/
     int forward_overfow = 0;
+
     /**
      * Real size of the record
      */
@@ -48,7 +47,9 @@ public class Record implements Comparable<Integer> {
     Record() {
     }
 
-    /** BODY **/
+    /**
+     * BODY
+     **/
     public Record(byte type, int rowid) throws SQLError {
         this.setType(type);
         this.setRowid(rowid);
@@ -79,29 +80,8 @@ public class Record implements Comparable<Integer> {
         return r;
     }
 
-    public static boolean check(byte[] pl) {
-        if (pl.length > 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public int getRowid() {
-        return rowid;
-    }
-
-    public void setRowid(int rowid) throws SQLError {
-        if (rowid > 0) this.rowid = rowid;
-        else throw new SQLError("Wrong record rowid");
-    }
-
-    public int size() {
-        return getHeaderSize() + payload.length;
-    }
-
     public ByteBuffer serialize() {
-        int size = 17 + payload.length; // 1 + 4 + 4 + 4 + 4 + payload
+        int size = this.size();
         ByteBuffer buf = ByteBuffer.allocate(size);
         // put header
         buf.put(type);
@@ -121,28 +101,41 @@ public class Record implements Comparable<Integer> {
         return buf;
     }
 
+    public int getRowid() {
+        return rowid;
+    }
+
+    public void setRowid(int rowid) throws SQLError {
+        if (rowid > 0) this.rowid = rowid;
+        else throw new SQLError("Wrong record rowid");
+    }
+
+    public int size() {
+        return (type == T_OVERFLOW_TUPLE ? getOverflowHeaderSize() : getHeaderSize()) + payload.length;
+    }
+
     @Override
     public int compareTo(Integer o) {
         return Integer.compareUnsigned(record_length, o);
     }
 
     public void setType(byte type) throws SQLError {
-        if (type >= 0 && type <= 3) this.type = type;
+        if (type >= 0 && type <= 4) this.type = type;
         else throw new SQLError("Wrong record type");
     }
 
-    public void setBackward_overflow(int bo) throws SQLError {
+    public void setBackOverflow(int bo) throws SQLError {
         if (bo > 0) this.backward_overflow = bo;
         else throw new SQLError("Wrong record backward overflow");
     }
 
-    public void setForward_overfow(int fo) throws SQLError {
+    public void setForwOverflow(int fo) throws SQLError {
         if (fo > 0) this.forward_overfow = fo;
         else throw new SQLError("Wrong record forward overflow");
     }
 
     public void setPayload(byte[] pl) throws SQLError {
-        if (check(pl)) {
+        if (pl.length > 0) {
             this.payload = pl;
             this.record_length = pl.length;
         } else {

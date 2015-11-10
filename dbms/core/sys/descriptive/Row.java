@@ -25,7 +25,7 @@ public class Row implements Comparable<Row> {
     public static Row deserialize(ByteBuffer b, TableSchema t) {
         Row row = new Row();
 
-        row.attrs = new ByteBuffer[t.attributes.length];
+        row.attrs = new Object[t.attributes.length];
         for (int i = 0; i < t.attributes.length; i++) {
             switch (t.attributes[i].type) {
                 case Attribute.T_BYTE:
@@ -53,12 +53,8 @@ public class Row implements Comparable<Row> {
         return row;
     }
 
-    public int getPkLength() {
-        return pk.length;
-    }
-
     public Object getPk() {
-        if (pk.length == 1) {
+        if (this.getPkLength() == 1) {
             return this.attrs[0];
         } else {
             String ind = "";
@@ -69,6 +65,10 @@ public class Row implements Comparable<Row> {
         }
     }
 
+    public int getPkLength() {
+        return pk.length;
+    }
+
     @Override
     public int compareTo(Row o) {
         return ((Comparable) getPk()).compareTo(o.getPk());
@@ -77,21 +77,21 @@ public class Row implements Comparable<Row> {
     public ByteBuffer serialize() throws Exception {
         int size = 0;
         for (int i = 0; i < attrs.length; i++) {
-            if (attrs[i] instanceof Integer) size += 4;
-            else if (attrs[i] instanceof Short) size += 4;
-            else if (attrs[i] instanceof String) size += 2 + ((String) attrs[i]).length();
+            if (attrs[i] instanceof String) size += 2 + ((String) attrs[i]).getBytes().length;
             else if (attrs[i] instanceof byte[]) size += 2 + ((byte[]) attrs[i]).length;
+            else if (attrs[i] instanceof Integer) size += 4;
+            else if (attrs[i] instanceof Short) size += 2;
             else if (attrs[i] instanceof Float) size += 4;
             else throw new Exception("Wrong type");
         }
 
         ByteBuffer b = ByteBuffer.allocate(size);
         for (int i = 0; i < attrs.length; i++) {
-            if (attrs[i] instanceof Integer) b.putInt((Integer) attrs[i]);
-            else if (attrs[i] instanceof Short) b.putShort((Short) attrs[i]);
-            else if (attrs[i] instanceof String) Misc.addStr(b, (String) attrs[i]);
+            if (attrs[i] instanceof String) Misc.addStr(b, (String) attrs[i]);
             else if (attrs[i] instanceof byte[]) Misc.addBytes(b, (byte[]) attrs[i]);
-            else if (attrs[i] instanceof Float) b.putFloat((Float) attrs[i]);
+            else if (attrs[i] instanceof Integer) b.putInt((int) attrs[i]);
+            else if (attrs[i] instanceof Short) b.putShort((short) attrs[i]);
+            else if (attrs[i] instanceof Float) b.putFloat((float) attrs[i]);
             else throw new Exception("Wrong type");
         }
         return b;
