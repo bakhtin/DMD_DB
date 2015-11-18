@@ -6,3 +6,5 @@
 *.lprof
 out/
 .class
+SMDB.iml
+junit-4.7.jar
