@@ -48,13 +48,16 @@ public class RecordManager {
      */
     public static List<Record> make(Row row, int rowid, int size) throws SQLError, Exception {
         byte[] payload = row.serialize().array();
+
         List<Record> records = new LinkedList<>();
         if (payload.length <= size) {
             records.add(make(row, rowid));
             return records;
         } else {
             int begin = 0;
+
             final int maxDataOnPage = Page.dataSize - Record.getOverflowHeaderSize();
+
             do {
                 Record ov_rec = new Record(Record.T_OVERFLOW_TUPLE, rowid);
                 int end = size > maxDataOnPage ? maxDataOnPage : size;

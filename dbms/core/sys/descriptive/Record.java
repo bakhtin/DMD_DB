@@ -12,9 +12,7 @@ import java.nio.ByteBuffer;
 public class Record implements Comparable<Integer> {
     public static final byte T_TABLE = 0;
     public static final byte T_TUPLE = 1;
-    public static final byte T_INODE = 2;
-    public static final byte T_LNODE = 3;
-    public static final byte T_OVERFLOW_TUPLE = 4;
+    public static final byte T_OVERFLOW_TUPLE = 2;
     /**
      * 0 - table
      * 1 - tuple
@@ -120,7 +118,7 @@ public class Record implements Comparable<Integer> {
     }
 
     public void setType(byte type) throws SQLError {
-        if (type >= 0 && type <= 4) this.type = type;
+        if (type >= 0 && type <= 3) this.type = type;
         else throw new SQLError("Wrong record type");
     }
 

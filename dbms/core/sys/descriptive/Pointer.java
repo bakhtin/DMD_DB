@@ -8,15 +8,30 @@ import java.nio.ByteBuffer;
  *         11/4/2015
  */
 public class Pointer {
-    public final int page;
-    public final int rowid;
+    public int page;
+    public int rowid;
 
     public Pointer(int pn, int rowid) {
         this.page = pn;
         this.rowid = rowid;
     }
 
+    Pointer() {
+    }
+
+    public static Pointer deserialize(ByteBuffer b) {
+        Pointer p = new Pointer(0, 0);
+        p.page = b.getInt();
+        p.rowid = b.getInt();
+
+        return p;
+    }
+
     public ByteBuffer serialize() {
-        return null;
+        ByteBuffer b = ByteBuffer.allocate(8);
+        b.putInt(page);
+        b.putInt(rowid);
+
+        return b;
     }
 }

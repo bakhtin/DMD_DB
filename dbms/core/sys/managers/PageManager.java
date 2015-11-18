@@ -17,7 +17,7 @@ import java.util.Queue;
  */
 class PageManager {
     private RandomAccessFile file;
-    private Queue<Page> freelist = new LinkedList<>();
+    private Queue<Integer> freelist = new LinkedList<>();
 
     public PageManager(RandomAccessFile f) throws DBStatus {
         this.file = f;
@@ -49,14 +49,18 @@ class PageManager {
         return p;
     }
 
-    public Page getFreePage() throws IOException {
+    public Page getFreePage() throws IOException, SQLError {
         if (freelist.isEmpty())
             return allocatePage();
         else
-            return freelist.poll();
+            return readPage(freelist.poll());
     }
 
     public void addFreePage(Page p) {
+        this.freelist.add(p.getNumber());
+    }
+
+    public void addFreePage(Integer p) {
         this.freelist.add(p);
     }
 }
