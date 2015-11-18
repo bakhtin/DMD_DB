@@ -118,7 +118,11 @@ public class Record implements Comparable<Integer> {
     }
 
     public void setType(byte type) throws SQLError {
+<<<<<<< HEAD
+        if (type >= 0 && type <= 4) this.type = type;
+=======
         if (type >= 0 && type <= 3) this.type = type;
+>>>>>>> origin/bogdan-devel
         else throw new SQLError("Wrong record type");
     }
 

@@ -24,7 +24,7 @@ public class DBTest {
         String line = file.nextLine();
 
 
-        DB.cursor.execute(line);
+        //DB.cursor.execute(line);
 
         DB.printPages();
     }
