@@ -25,8 +25,10 @@ public class TreeManager {
 
     public List<Page> bulkInsert(Relation table) throws Exception, RecordStatus, SQLError {
         List<Page> pages = new LinkedList<>();
+
         final Page[] p = {pageManager.getFreePage()};
         Iterator<Map.Entry<Integer, Row>> it = table.entrySet().iterator();
+
         while (it.hasNext()) {
             Map.Entry<Integer, Row> entry = it.next();
             Row row = entry.getValue();
