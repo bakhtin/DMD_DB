@@ -1,6 +1,7 @@
 package core.managers;
 
 import core.descriptive.Page;
+import core.descriptive.TableSchema;
 import core.exceptions.DBStatus;
 import core.exceptions.RecordStatus;
 import core.exceptions.SQLError;
@@ -9,6 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.HashMap;
 
 /**
  * @author Bogdan Vaneev
@@ -16,9 +18,8 @@ import java.io.RandomAccessFile;
  *         11/4/2015
  */
 public class DBManager {
+    public static HashMap<String, TableSchema> tables; // String key: table_name; TableSchema value: table_description
     static int totalPages = 0;
-    //public SQL cursor;
-
     String dbpath;
     RandomAccessFile file;
     File db;
@@ -93,9 +94,7 @@ public class DBManager {
         pageManager = new PageManager(file);
         cacheManager = new CacheManager(pageManager);
         recordManager = new RecordManager(pageManager);
-        treeManager = new TreeManager(recordManager.pageManager);
-
-        //cursor = new SQL();
+        treeManager = new TreeManager(recordManager.pageManager, cacheManager);
 
         throw stat;
     }

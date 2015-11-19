@@ -4,6 +4,7 @@ import core.descriptive.*;
 import core.exceptions.RecordStatus;
 import core.exceptions.SQLError;
 
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,13 +16,15 @@ import java.util.Map;
  *         11/8/2015
  */
 public class TreeManager {
-    public static final int MAX_PAGES_IN_MEMORY = 5; // MUST be greater than 3
+    public static final int MAX_PAGES_IN_MEMORY = 5; // just a random small number greater than 3
     public static final byte min_free_space = Record.getOverflowHeaderSize(); // bytes
 
     PageManager pageManager;
+    CacheManager cacheManager;
 
-    TreeManager(PageManager p) {
+    TreeManager(PageManager p, CacheManager c) {
         this.pageManager = p;
+        this.cacheManager = c;
     }
 
     public LinkedList<Pointer> bulkInsert(Relation table) throws Exception, RecordStatus, SQLError {
@@ -74,7 +77,7 @@ public class TreeManager {
                 }
             }
 
-            // if in structure 'pages' more than MAX_PAGES_IN_MEMORY pages (just a random small number greater than 3)
+            // if in structure 'pages' more than MAX_PAGES_IN_MEMORY pages
             // then write it on the file
             if (pages.size() > MAX_PAGES_IN_MEMORY) {
                 Page popped = pages.pollFirst();
@@ -103,8 +106,33 @@ public class TreeManager {
         return pointers;
     }
 
-    // list of pointers MUST BE SORTED
+    // list of pointers MUST BE SORTED on the pointed data
     public void createIndex(LinkedList<Pointer> pointers) {
+        ByteBuffer b = ByteBuffer.allocate(pointers.size() * 4 * 2);
+
+        // for each pointer
+        for (Pointer pointer : pointers) {
+            ByteBuffer p = pointer.serialize();
+            System.out.println(pointer.rowid);
+
+        }
+    }
+
+    /**
+     * Used for bulk-loading
+     *
+     * @param row - Row
+     */
+    public void insertLast(Row row) {
+
+    }
+
+    /**
+     * Used for usual insertions. We don't care about order of the rows during the calls.
+     *
+     * @param row - Row
+     */
+    public void insertRandom(Row row) {
 
     }
 }

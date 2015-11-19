@@ -2,8 +2,9 @@ package SQL;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -23,19 +24,20 @@ public class SQLParser {
             if (statements.getStatements().get(0) instanceof Insert) {
                 Insert statement = (Insert) statements.getStatements().get(0);
 
-                ItemsList hui = statement.getItemsList();
-                List<ExpressionList> hui2 = ((MultiExpressionList) hui).getExprList();
+                List<ExpressionList> recordsList = ((MultiExpressionList) statement.getItemsList()).getExprList();
 
                 // for each expression
-                for (ExpressionList row : hui2) {
+                for (ExpressionList row : recordsList) {
                     List<Expression> expr = row.getExpressions();
-                    Object[] line = new Object[expr.size()];
-                    // for each attribute
-                    int i = 0;
-                    for (Object attr : expr) {
-                        // if attr instanceof StringValue then line[i++] = (String) attr;
+                    Object[] line = expr.toArray();
+                    for (int i = 0; i < line.length; i++) {
+                        if (line[i] instanceof LongValue) line[i] = (int) ((LongValue) line[i]).getValue();
+                        else if (line[i] instanceof StringValue) line[i] = ((StringValue) line[i]).getValue();
                     }
                 }
+
+                // to obtain descriptive TableSchema object you can write
+                // DBManager.tables.get(String tbl_name);
                 //Row row = new Row(statement.getItemsList(), );
                 //statement.
             }
