@@ -16,9 +16,7 @@ public class Record implements Comparable<Integer> {
     /**
      * 0 - table
      * 1 - tuple
-     * 2 - internal b+tree node
-     * 3 - leaf b+tree node
-     * 4 - overflow tuple
+     * 2 - overflow tuple
      */
     byte type;
     /**
