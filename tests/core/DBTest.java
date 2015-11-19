@@ -1,8 +1,8 @@
 package core;
 
-import core.sys.exceptions.RecordStatus;
-import core.sys.exceptions.SQLError;
-import core.sys.managers.DBManager;
+import core.exceptions.RecordStatus;
+import core.exceptions.SQLError;
+import core.managers.DBManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +25,5 @@ public class DBTest {
 
 
         //DB.cursor.execute(line);
-
-        DB.printPages();
     }
 }
