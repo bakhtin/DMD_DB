@@ -53,15 +53,19 @@ public class Page implements Comparable<Integer> {
         Page p = new Page();
         p.number = buf.getInt();
         p.type = buf.get();
-        byte numberOfRecords = buf.get();
-        p.previous = buf.getInt();
+        short numberOfRecords = buf.getShort();
         p.next = buf.getInt();
+        p.previous = buf.getInt();
 
         for (int i = 0; i < numberOfRecords; i++) {
             Record r = Record.deserialize(buf);
             p.records.put(r.rowid, r);
         }
         return p;
+    }
+
+    public byte getType() {
+        return type;
     }
 
     public void setType(byte type) throws RecordStatus {
@@ -81,8 +85,16 @@ public class Page implements Comparable<Integer> {
         return free() >= record.size();
     }
 
+    public int getNext() {
+        return next;
+    }
+
     public void setNext(int next) {
         this.next = next;
+    }
+
+    public int getPrev() {
+        return previous;
     }
 
     public void setPrev(int prev) {
@@ -123,12 +135,12 @@ public class Page implements Comparable<Integer> {
         }
     }
 
-    public ByteBuffer serialize() {
+    public ByteBuffer serialize() throws Exception {
         ByteBuffer buf = ByteBuffer.allocate(pageSize);
         buf.clear();
         buf.putInt(number);
         buf.put(type);
-        buf.put((byte) records.size()); // number of records
+        buf.putShort((short) records.size()); // number of records
         buf.putInt(previous);
         buf.putInt(next);
 

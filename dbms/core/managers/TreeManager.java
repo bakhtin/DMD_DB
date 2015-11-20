@@ -4,7 +4,6 @@ import core.descriptive.*;
 import core.exceptions.RecordStatus;
 import core.exceptions.SQLError;
 
-import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,6 +20,7 @@ public class TreeManager {
 
     PageManager pageManager;
     CacheManager cacheManager;
+    private LinkedList<Page> pages = new LinkedList<>();
 
     TreeManager(PageManager p, CacheManager c) {
         this.pageManager = p;
@@ -55,9 +55,6 @@ public class TreeManager {
                 pages.add(p[0]);
                 p[0] = pageManager.getFreePage();
             }
-
-            if (p[0].free() < 0)
-                throw new Exception("Negative free space on the page");
 
             List<Record> records = RecordManager.make(row, rowid, p[0].free());
             for (Record record : records) {
@@ -97,25 +94,8 @@ public class TreeManager {
             pages.add(p[0]);
         }
 
-        // write remaining MAX_PAGES_IN_MEMORY pages
-        while (!pages.isEmpty()) {
-            Page popped = pages.pollFirst();
-            pageManager.writePage(popped);
-        }
 
         return pointers;
-    }
-
-    // list of pointers MUST BE SORTED on the pointed data
-    public void createIndex(LinkedList<Pointer> pointers) {
-        ByteBuffer b = ByteBuffer.allocate(pointers.size() * 4 * 2);
-
-        // for each pointer
-        for (Pointer pointer : pointers) {
-            ByteBuffer p = pointer.serialize();
-            System.out.println(pointer.rowid);
-
-        }
     }
 
     /**
@@ -123,7 +103,43 @@ public class TreeManager {
      *
      * @param row - Row
      */
-    public void insertLast(Row row) {
+    public void insertLast(int rowid, Row row, Page root) throws SQLError, Exception, RecordStatus {
+        // if it is leaf
+        if (root.getType() == Page.T_LNODE) {
+            LeafNode leaf = (LeafNode) root;
+
+            List<Record> records = RecordManager.make(row, rowid, leaf.free());
+            for (Record record : records) {
+                if (leaf.canInsert(record)) {
+                    leaf.addRecord(record);
+                } else {
+                    if (leaf.getNext() != 0) {
+                        insertLast(rowid, row, cacheManager.get(leaf.getNext()));
+                    } else {
+                        Page free = pageManager.getFreePage();
+
+                        Page last = pages.getLast();
+                        if (last != null) {
+                            last.setNext(leaf.getNumber());
+                            leaf.setPrev(last.getNumber());
+                        }
+
+                        pages.add(leaf);
+                    }
+
+                }
+            }
+        } else if (root.getType() == Page.T_INODE) {
+
+        } else {
+            throw new Exception("Bad page type");
+        }
+
+        // write remaining MAX_PAGES_IN_MEMORY pages
+        while (!pages.isEmpty()) {
+            Page popped = pages.pollFirst();
+            pageManager.writePage(popped);
+        }
 
     }
 

@@ -81,4 +81,13 @@ public class Misc {
         return result;
     }
 
+    public static int sizeof(Object obj) throws Exception {
+        if (obj instanceof String) return 2 + ((String) obj).getBytes().length;
+        else if (obj instanceof byte[]) return 2 + ((byte[]) obj).length;
+        else if (obj instanceof Integer) return 4;
+        else if (obj instanceof Short) return 2;
+        else if (obj instanceof Float) return 4;
+        else throw new Exception("Wrong type");
+    }
+
 }

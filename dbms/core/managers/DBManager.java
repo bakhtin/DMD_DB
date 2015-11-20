@@ -8,7 +8,6 @@ import core.exceptions.SQLError;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
 
@@ -19,17 +18,16 @@ import java.util.HashMap;
  */
 public class DBManager {
     public static HashMap<String, TableSchema> tables; // String key: table_name; TableSchema value: table_description
+    public static PageManager pageManager;
+    public static CacheManager cacheManager;
     static int totalPages = 0;
+    static RecordManager recordManager;
+    static TreeManager treeManager;
     String dbpath;
     RandomAccessFile file;
     File db;
 
-    PageManager pageManager;
-    RecordManager recordManager;
-    CacheManager cacheManager;
-    TreeManager treeManager;
-
-    public DBManager(String path) throws RecordStatus, SQLError, IOException {
+    public DBManager(String path) {
         this.dbpath = path;
 
         try {
@@ -45,7 +43,7 @@ public class DBManager {
                 /** OK **/
                 case DBStatus.DB_NOT_EXISTS:
                     System.out.println("DB File does not exist. Creating new DB file...");
-                    createDB();
+
                     break;
 
                 /** ERROR **/
@@ -99,13 +97,9 @@ public class DBManager {
         throw stat;
     }
 
-    private void createDB() throws IOException, SQLError, RecordStatus {
+    private void createDB() throws Exception, SQLError, RecordStatus {
         // very first (main) page
         recordManager.pageManager.getFreePage();
-    }
-
-    public void printPages() {
-
     }
 
 }

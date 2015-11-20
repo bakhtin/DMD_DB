@@ -60,7 +60,7 @@ public class CacheManager {
      *
      * @param p - Page
      */
-    public void put(Page p) throws IOException {
+    public void put(Page p) throws Exception {
         if (cache.containsKey(p.getNumber())) {
             cache.put(p.getNumber(), p);
         }
