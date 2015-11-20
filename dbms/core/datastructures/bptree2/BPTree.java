@@ -1,5 +1,7 @@
 package core.datastructures.bptree2;
 
+import core.descriptive.Attribute;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -7,7 +9,7 @@ import java.util.List;
 
 public class BPTree<E extends Comparable<E>> {
 
-    static byte KEY_TYPE;
+    static byte KEY_TYPE = Attribute.T_INT;
 
     private int leafSize;
     private int internalSize;
@@ -30,7 +32,7 @@ public class BPTree<E extends Comparable<E>> {
     }
 
     public static void main(String[] args) throws Exception {
-        BPTree<Integer> t = new BPTree<Integer>(4, 4, 3, (byte) 0);
+        BPTree<Integer> t = new BPTree<Integer>(4, 4, 3, Attribute.T_TEXT);
         ArrayList<Integer> keys = new ArrayList<Integer>();
         for (int i = 0; i < 50; i++) {
             keys.add(i);

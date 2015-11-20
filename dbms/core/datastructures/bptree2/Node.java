@@ -46,6 +46,7 @@ public class Node<E extends Comparable> extends Page {
         int next = b.getInt();
 
         Node<Comparable> c = new Node<>(nodeSize, isLeaf);
+        c.number = number;
         c.nextious = next;
         c.previous = prev;
 
@@ -80,8 +81,10 @@ public class Node<E extends Comparable> extends Page {
         buf.put(isLeaf ? Page.T_LNODE : Page.T_LNODE);
         buf.put(BPTree.KEY_TYPE);
         buf.putShort((short) nodeSize);
-        buf.putInt(prev.number);
-        buf.putInt(next.number);
+        this.previous = prev == null ? 0 : prev.number;
+        buf.putInt(this.previous);
+        this.nextious = next == null ? 0 : next.number;
+        buf.putInt(this.nextious);
 
         buf.putShort((short) keys.size()); // number of records
         for (Comparable k : this.keys) {

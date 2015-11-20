@@ -98,11 +98,14 @@ public class TreeManager {
         return pointers;
     }
 
+
     /**
      * Used for bulk-loading
      *
      * @param row - Row
      */
+
+    /*
     public void insertLast(int rowid, Row row, Page root) throws SQLError, Exception, RecordStatus {
         // if it is leaf
         if (root.getType() == Page.T_LNODE) {
@@ -142,6 +145,7 @@ public class TreeManager {
         }
 
     }
+    */
 
     /**
      * Used for usual insertions. We don't care about order of the rows during the calls.
