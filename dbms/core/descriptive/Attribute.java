@@ -145,6 +145,10 @@ public class Attribute {
         else return -1;
     }
 
+    public void setRootpage(int root) {
+        this.rootpage = root;
+    }
+
     public ByteBuffer serialize() {
         byte[] nameb = this.name.getBytes();
         byte[] fkb;

@@ -106,6 +106,19 @@ public class Record implements Comparable<Integer> {
         else throw new SQLError("Wrong record rowid");
     }
 
+    public ByteBuffer getPayload() {
+        return ByteBuffer.wrap(this.payload);
+    }
+
+    public void setPayload(byte[] pl) throws SQLError {
+        if (pl.length > 0) {
+            this.payload = pl;
+            this.record_length = pl.length;
+        } else {
+            throw new SQLError("Wrong record payload");
+        }
+    }
+
     public int size() {
         return (type == T_OVERFLOW_TUPLE ? getOverflowHeaderSize() : getHeaderSize()) + payload.length;
     }
@@ -128,14 +141,5 @@ public class Record implements Comparable<Integer> {
     public void setForwOverflow(int fo) throws SQLError {
         if (fo > 0) this.forward_overfow = fo;
         else throw new SQLError("Wrong record forward overflow");
-    }
-
-    public void setPayload(byte[] pl) throws SQLError {
-        if (pl.length > 0) {
-            this.payload = pl;
-            this.record_length = pl.length;
-        } else {
-            throw new SQLError("Wrong record payload");
-        }
     }
 }

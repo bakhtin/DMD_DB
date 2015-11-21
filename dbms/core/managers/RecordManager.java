@@ -71,5 +71,11 @@ public class RecordManager {
         return records;
     }
 
+    public static Record make(TableSchema table) throws SQLError {
+        Record record = new Record(Record.T_TABLE, DBManager.tables.size() + 1);
+        record.setPayload(table.serialize().array());
+        return record;
+    }
+
 
 }

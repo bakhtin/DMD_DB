@@ -5,7 +5,6 @@ import core.exceptions.SQLError;
 import core.managers.DBManager;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Scanner;
 
 /**
@@ -14,7 +13,7 @@ import java.util.Scanner;
  *         11/4/2015
  */
 public class DBTest {
-    public static void main(String[] args) throws SQLError, IOException, RecordStatus {
+    public static void main(String[] args) throws SQLError, Exception, RecordStatus {
         File q = new File("baza.db");
         q.delete();
 

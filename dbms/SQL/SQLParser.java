@@ -14,16 +14,12 @@ import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statements;
-import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
-import org.w3c.dom.Attr;
+import net.sf.jsqlparser.statement.insert.Insert;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.jar.Attributes;
 
 
 public class SQLParser {
@@ -123,7 +119,8 @@ public class SQLParser {
                 }
                 TableSchema tableSchema = new TableSchema(statement.getTable().toString());
                 tableSchema.attributes = attrs;
-                System.out.print("");
+
+                //DBServer.SMDB
             }
             Insert insert = (Insert) parserManager.parse(new StringReader(query));
             return insert.getTable().toString();
