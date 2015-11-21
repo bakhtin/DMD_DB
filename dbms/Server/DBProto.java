@@ -1,6 +1,7 @@
 package Server;
 
 import SQL.SQLParser;
+import core.exceptions.SQLError;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
@@ -10,7 +11,7 @@ import java.io.StringReader;
 import java.util.Map;
 
 public class DBProto {
-    public String processInput(String theInput)  {
+    public String processInput(String theInput) throws SQLError {
         if (theInput != null) {
             return SQLParser.processQuery(theInput);
         }
