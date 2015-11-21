@@ -28,7 +28,7 @@ public class Daemon {
                 System.out.println("Running server on port " + portNumber);
                 System.out.println("Ready");
                 while (listening) {
-                    new DBServerThread(serverSocket.accept()).start();
+                    new Server.DBServerThread(serverSocket.accept()).start();
                 }
             } catch (IOException e) {
                 System.err.println("Could not listen on port " + portNumber);

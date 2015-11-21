@@ -1,14 +1,20 @@
 package Server;
 
-import core.exceptions.RecordStatus;
-import core.exceptions.SQLError;
+import core.descriptive.Page;
+import core.descriptive.TableSchema;
 import core.managers.DBManager;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.Map;
 
 public class DBServer {
     public static DBManager SMDB;
+    public static DB db;
+    public static Map<String, TableSchema> tables;
 
     public static void main(String[] args) throws IOException {
 
@@ -18,20 +24,25 @@ public class DBServer {
 
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
             System.out.println("Running server on port " + portNumber);
-            SMDB = new DBManager("sm.db");
+
+            db = DBMaker.fileDB(new File("sm.db"))
+                    .transactionDisable()
+                    .cacheSize(Page.pageSize * 4000)
+                    ._newMemoryDirectDB()
+                    .make();
+
+            tables = db.getHashMap("tables");
+
             System.out.println("Ready");
             while (listening) {
-                new DBServerThread(serverSocket.accept()).start();
+                new Server.DBServerThread(serverSocket.accept()).start();
             }
         } catch (IOException e) {
             System.err.println("Could not listen on port " + portNumber);
             System.exit(-1);
-        } catch (SQLError sqlError) {
-            sqlError.printStackTrace();
+
         } catch (Exception e) {
             e.printStackTrace();
-        } catch (RecordStatus recordStatus) {
-            recordStatus.printStackTrace();
         }
     }
 }

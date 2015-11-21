@@ -145,6 +145,18 @@ public class Attribute {
         else return -1;
     }
 
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String n) throws SQLError {
+        if (n.matches("[a-z0-9A-Z_\\-]{1,24}")) {
+            this.name = n;
+        } else {
+            throw new SQLError("Incorrect attribute name");
+        }
+    }
+
     public void setRootpage(int root) {
         this.rootpage = root;
     }
@@ -185,14 +197,6 @@ public class Attribute {
 
     public void removeFlag(byte flag) {
         if (this.hasFlag(flag)) this.flags ^= flag;
-    }
-
-    public void setName(String n) throws SQLError {
-        if (n.matches("[a-z0-9A-Z_\\-]{1,24}")) {
-            this.name = n;
-        } else {
-            throw new SQLError("Incorrect attribute name");
-        }
     }
 
     public void setType(byte type) throws SQLError {

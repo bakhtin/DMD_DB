@@ -32,7 +32,7 @@ public class DBServerThread extends Thread {
 
             while ((inputLine = in.readLine()) != null) {
                 try {
-                    outputLine = DBServer.SMDB.processQuery(inputLine);
+                    outputLine = Server.DBServer.SMDB.processQuery(inputLine);
                     out.println(outputLine);
                 } catch (SQLError e) {
                     out.println();
