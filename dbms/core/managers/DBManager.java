@@ -15,7 +15,10 @@ import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.RandomAccessFile;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,6 +51,7 @@ public class DBManager {
                 case DBStatus.DB_EXISTS:
                     System.out.println("DB File exists. Initializing...");
 
+                    openDB();
 
                     break;
 
@@ -128,12 +132,19 @@ public class DBManager {
 
     }
 
-    private void openDB() throws IOException, SQLError {
+    private void openDB() throws Exception, SQLError, RecordStatus {
         Page main = cacheManager.get(0);
         for (Map.Entry<Integer, Record> entry : main.records.entrySet()) {
             TableSchema schema = TableSchema.deserialize(entry.getValue().getPayload());
             tables.put(schema.getName(), schema);
         }
+
+        Page new_main = new Page(0);
+        for (Map.Entry<String, TableSchema> entry : tables.entrySet()) {
+            new_main.addRecord(RecordManager.make(entry.getValue()));
+        }
+
+        cacheManager.put(new_main);
     }
 
     public String processQuery(String query) throws SQLError, Exception, RecordStatus {
@@ -159,7 +170,7 @@ public class DBManager {
                     Attribute[] attrsArray = tSchema.attributes;
                     LinkedList<Integer> indexList = new LinkedList<>();
                     for (int i = 0; i < attrsArray.length; i++) {
-                        if (attrsArray[i].hasFlag(2) || attrsArray[i].hasFlag(16)) {
+                        if (attrsArray[i].hasFlag(Attribute.F_PK)) {
                             indexList.add(i);
                         }
                     }
@@ -174,12 +185,16 @@ public class DBManager {
                     for (int i = 0; i < line.length; i++) {
                         line[i] = TypeCaster(line[i]);
                     }
-                    TableSchema tSchema = DBManager.tables.get(statement.getTable());
+
+                    if (!DBManager.tables.containsKey(statement.getTable().toString()))
+                        throw new SQLError("Table " + statement.getTable() + " is not present in the DB");
+
+                    TableSchema tSchema = DBManager.tables.get(statement.getTable().toString());
                     Attribute[] attrsArray = tSchema.attributes;
                     LinkedList<Integer> indexList = new LinkedList<>();
                     for (int i = 0; i < attrsArray.length; i++) {
                         // indexed fields if PK or UQ
-                        if (attrsArray[i].hasFlag(2) || attrsArray[i].hasFlag(16)) {
+                        if (attrsArray[i].hasFlag(Attribute.F_PK)) {
                             indexList.add(i);
                         }
                     }
