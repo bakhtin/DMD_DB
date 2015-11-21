@@ -4,6 +4,7 @@ import core.exceptions.SQLError;
 import core.util.Misc;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 
 /**
  * @author Bogdan Vaneev
@@ -61,7 +62,7 @@ public class Attribute {
 
     public Attribute(String name, String type) throws SQLError {
         setName(name);
-        setType((byte) getType(type));
+        setType((byte) getDataType(type));
     }
 
     public Attribute(String name, byte type) throws SQLError {
@@ -70,6 +71,40 @@ public class Attribute {
     }
 
     Attribute() {
+    }
+
+    public static byte fromMysql(String type) throws SQLError {
+        if (type.equals("INT")) return 1;
+        else if (type.equals("VARCHAR")) return 3;
+        else if (type.equals("ENUM")) return 4; //return byte
+        else throw (new SQLError("Unable to cast MySQL type: " + type));
+    }
+
+    public static byte toEnumCaster(String value) {
+        // hardcodim
+        HashMap<String, Byte> kwEnum = new HashMap<>();
+        kwEnum.put("thesaurusterms", (byte) 1);
+        kwEnum.put("controlledterms", (byte) 2);
+        kwEnum.put("uncontrolledterms", (byte) 2);
+        try {
+            return kwEnum.get(value);
+        }
+        catch (NullPointerException e) {
+            return (byte) 1;
+        }
+    }
+
+    public static String fromEnumCaster(byte value) {
+        HashMap<Byte, String> kwEnum = new HashMap<>();
+        kwEnum.put(value, "thesaurusterms");
+        kwEnum.put(value, "controlledterms");
+        kwEnum.put(value, "uncontrolledterms");
+        try {
+            return kwEnum.get(value);
+        }
+        catch (NullPointerException e) {
+            return "thesaurusterms";
+        }
     }
 
     public static Attribute deserialize(ByteBuffer b) {
@@ -92,13 +127,22 @@ public class Attribute {
         return a;
     }
 
-    public static int getType(String type) {
+    public static int getDataType(String type) {
         type = type.toLowerCase();
         if (type.matches(".*(?:int).*")) return T_INT;
         if (type.matches(".*(?:varchar|text).*")) return T_TEXT;
         if (type.matches(".*(?:float).*")) return T_FLOAT;
         if (type.matches(".*(?:short).*")) return T_SHORT;
         return T_BYTE;
+    }
+
+    public static byte getConstraintType(String constraint) {
+        constraint = constraint.toLowerCase();
+        if (constraint.matches(".*(?:primary key).*")) return F_PK;
+        else if (constraint.matches(".*(?:not null).*")) return F_NN;
+        else if (constraint.matches(".*(?:auto_increment).*")) return F_AI;
+        else if (constraint.matches(".*(?:unique).*")) return F_UQ;
+        else return -1;
     }
 
     public ByteBuffer serialize() {
