@@ -1,9 +1,12 @@
 package core.descriptive;
 
 import core.exceptions.SQLError;
-import core.util.Misc;
+import org.mapdb.Serializer;
 
-import java.nio.ByteBuffer;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 
 /**
@@ -11,7 +14,7 @@ import java.util.HashMap;
  *         Innopolis University
  *         10/23/2015
  */
-public class Attribute {
+public class Attribute implements Serializable {
     /**
      * FLAGS
      **/
@@ -107,24 +110,31 @@ public class Attribute {
         }
     }
 
-    public static Attribute deserialize(ByteBuffer b) {
-        Attribute a = new Attribute();
-        a.name = Misc.parseStr(b);
-        a.type = b.get();
-        a.flags = b.get();
+    public static Serializer attributeSerializer() {
+        return new Serializer<Attribute>() {
+            @Override
+            public void serialize(DataOutput dataOutput, Attribute o) throws IOException {
+                dataOutput.writeUTF(o.name);
+                dataOutput.write(o.type);
+                dataOutput.write(o.flags);
 
-        if (a.hasFlag(F_DV)) {
-            a.defaultValue = Misc.parseBytes(b);
-        }
+                if (o.hasFlag(F_FK))
+                    dataOutput.writeUTF(o.fk);
+            }
 
-        if (a.hasFlag(F_FK)) {
-            a.fk = Misc.parseStr(b);
-        }
+            @Override
+            public Attribute deserialize(DataInput dataInput, int i) throws IOException {
+                Attribute a = new Attribute();
+                a.name = dataInput.readUTF();
+                a.type = dataInput.readByte();
+                a.flags = dataInput.readByte();
 
-        if (a.hasFlag(F_UQ))
-            a.rootpage = b.getInt();
+                if (a.hasFlag(F_FK))
+                    a.fk = dataInput.readUTF();
 
-        return a;
+                return a;
+            }
+        };
     }
 
     public static int getDataType(String type) {
@@ -157,42 +167,13 @@ public class Attribute {
         }
     }
 
-    public void setRootpage(int root) {
-        this.rootpage = root;
-    }
+    public Serializer getSerializer() {
+        if (type == T_FLOAT) return Serializer.FLOAT;
+        if (type == T_INT) return Serializer.INTEGER;
+        if (type == T_TEXT) return Serializer.STRING;
+        if (type == T_SHORT) return Serializer.SHORT;
 
-    public ByteBuffer serialize() {
-        byte[] nameb = this.name.getBytes();
-        byte[] fkb;
-
-        int size = 2 + nameb.length + 1 + 1 + (this.hasFlag(F_UQ) ? 4 : 0);
-
-        if (this.hasFlag(F_FK)) {
-            fkb = this.fk.getBytes();
-            size += 2 + fkb.length;
-        }
-
-        if (this.hasFlag(F_DV)) {
-            size += 2 + defaultValue.length;
-        }
-
-        ByteBuffer buf = ByteBuffer.allocate(size);
-
-        Misc.addStr(buf, name);
-        buf.put(type);
-        buf.put(flags);
-
-        if (this.hasFlag(F_DV))
-            Misc.addBytes(buf, defaultValue);
-
-        if (this.hasFlag(F_FK))
-            Misc.addStr(buf, fk);
-
-        if (this.hasFlag(F_UQ))
-            buf.putInt(rootpage);
-
-        buf.flip();
-        return buf;
+        return Serializer.BYTE_ARRAY;
     }
 
     public void removeFlag(byte flag) {

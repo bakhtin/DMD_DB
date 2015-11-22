@@ -1,20 +1,26 @@
 package core.descriptive;
 
 import core.exceptions.SQLError;
-import core.util.Misc;
+import org.mapdb.Serializer;
 
-import java.nio.ByteBuffer;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * @author Bogdan Vaneev
  *         Innopolis University
  *         10/24/2015
  */
-public class TableSchema {
+public class TableSchema implements Serializable {
     public Attribute[] attributes;
+    public HashMap<String, Attribute> attrs = new HashMap<>();
     String tbl_name;
     int recordsTotal = 0;
     int autoIncrement = 0;
+
 
     TableSchema() {
     }
@@ -28,19 +34,51 @@ public class TableSchema {
         attributes = new Attribute[attrn];
     }
 
-    public static TableSchema deserialize(ByteBuffer b) {
-        TableSchema t = new TableSchema();
-        t.tbl_name = Misc.parseStr(b);
-        t.recordsTotal = b.getInt();
-        t.autoIncrement = b.getInt();
+    public static Serializer tableSchemaSerializer() {
+        return new Serializer<TableSchema>() {
+            @Override
+            public void serialize(DataOutput dataOutput, TableSchema o) throws IOException {
+                dataOutput.writeUTF(o.tbl_name);
+                dataOutput.writeShort(o.attributes.length);
+                for (int i = 0; i < o.attributes.length; i++) {
+                    Serializer<Attribute> attributeSerializer = Attribute.attributeSerializer();
+                    attributeSerializer.serialize(dataOutput, o.attributes[i]);
+                }
+            }
 
-        short attrn = b.getShort();
-        t.attributes = new Attribute[attrn];
-        for (short i = 0; i < attrn; i++) {
-            t.attributes[i] = Attribute.deserialize(b);
+            @Override
+            public TableSchema deserialize(DataInput dataInput, int i) throws IOException {
+                TableSchema table = new TableSchema();
+                table.tbl_name = dataInput.readUTF();
+                short attrl = dataInput.readShort();
+                table.attributes = new Attribute[attrl];
+
+                for (int k = 0; k < attrl; k++) {
+                    Serializer<Attribute> attributeSerializer = Attribute.attributeSerializer();
+                    table.attributes[k] = attributeSerializer.deserialize(dataInput, i);
+                    table.attrs.put(table.attributes[k].getName(), table.attributes[k]);
+                }
+
+                return table;
+            }
+        };
+    }
+
+    public Serializer[] getSerializers() {
+        Serializer[] sr = new Serializer[attributes.length];
+        for (int i = 0; i < attributes.length; i++) {
+            sr[i] = attributes[i].getSerializer();
         }
 
-        return t;
+        return sr;
+    }
+
+    public int getPKlength() {
+        int counter = 0;
+        for (Attribute a : attributes) {
+            if (a.hasFlag(Attribute.F_PK)) counter++;
+        }
+        return counter;
     }
 
     public String getName() {
@@ -53,35 +91,6 @@ public class TableSchema {
         } else {
             throw new SQLError("Incorrect table name");
         }
-    }
-
-    public ByteBuffer serialize() {
-        byte[] tbl = tbl_name.getBytes();
-
-        int size = 2 + tbl.length + 4 + 4 + 2 + 4;
-
-        ByteBuffer[] attrs = new ByteBuffer[attributes.length];
-        for (int i = 0; i < attributes.length; i++) {
-            attrs[i] = attributes[i].serialize();
-            size += attrs[i].capacity();
-        }
-
-        ByteBuffer b = ByteBuffer.allocate(size);
-
-
-        // PUT
-        Misc.addStr(b, tbl_name);
-        b.putInt(recordsTotal);
-        b.putInt(autoIncrement);
-
-        b.putShort((short) attrs.length);
-        for (int i = 0; i < attributes.length; i++) {
-            b.put(attrs[i]);
-        }
-
-        b.flip();
-
-        return b;
     }
 
 }

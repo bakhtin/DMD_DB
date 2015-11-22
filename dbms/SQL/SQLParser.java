@@ -61,7 +61,7 @@ public class SQLParser {
                             }
                         }
                         int[] array = indexList.stream().mapToInt(i->i).toArray();
-                        rows.add(new Row(line, array));
+                        //rows.add(new Row(line, array));
                     }
                 }
                 catch (ClassCastException e) {
@@ -82,7 +82,7 @@ public class SQLParser {
                             }
                         }
                         int[] array = indexList.stream().mapToInt(i->i).toArray();
-                        rows.add(new Row(line, array));
+                        //rows.add(new Row(line, array));
                     }
                     catch (ClassCastException d) {
                         throw new SQLError("Insert cannot be empty");

@@ -1,6 +1,5 @@
 package Server;
 
-import core.descriptive.Page;
 import core.descriptive.TableSchema;
 import core.managers.DBManager;
 import org.mapdb.DB;
@@ -27,11 +26,12 @@ public class DBServer {
 
             db = DBMaker.fileDB(new File("sm.db"))
                     .transactionDisable()
-                    .cacheSize(Page.pageSize * 4000)
-                    ._newMemoryDirectDB()
+                    .cacheLRUEnable()
                     .make();
 
-            tables = db.getHashMap("tables");
+            db.commit();
+
+            tables = db.hashMapCreate("tables").valueSerializer(TableSchema.tableSchemaSerializer()).makeOrGet();
 
             System.out.println("Ready");
             while (listening) {
