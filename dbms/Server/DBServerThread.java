@@ -27,7 +27,7 @@ public class DBServerThread extends Thread {
                                 socket.getInputStream()))
         ) {
             String inputLine, outputLine = "";
-
+            String query = "";
             out.println("CONNECTION_OK");
 
             while ((inputLine = in.readLine()) != null) {
@@ -38,24 +38,31 @@ public class DBServerThread extends Thread {
                     break;
                 }
 
-
-
                 try {
-                    outputLine = Server.DBServer.SMDB.processQuery(inputLine);
-                    out.println(outputLine);
+                    query += inputLine;
+                    if (query.endsWith(";")) {
+                        query = query.replaceAll("[\\s]{2,}", " ").replaceAll("[\\n\\r\\t]|;", "");
+                        outputLine = Server.DBServer.SMDB.processQuery(query);
+                        query = "";
+                        out.println(outputLine);
+                    }
                 } catch (SQLError e) {
                     out.println();
                     out.println(e.getMessage());
+                    query = "";
                 } catch (JSQLParserException e) {
                     out.println();
                     if (e == null) out.println("Wrong SQL syntax.");
                     else out.println(e.getCause());
+                    query = "";
                 } catch (Exception e) {
                     out.println();
                     e.printStackTrace();
+                    query = "";
                 } catch (RecordStatus recordStatus) {
                     out.println();
                     recordStatus.printStackTrace();
+                    query = "";
                 }
 
 

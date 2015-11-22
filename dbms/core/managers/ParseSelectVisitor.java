@@ -25,11 +25,13 @@ public class ParseSelectVisitor implements SelectVisitor {
 
         DB db = DBMaker.memoryDB().make();
 
+
     }
 
 
     private HashMap<String, String> getTableAlias(PlainSelect plainSelect) {
         HashMap<String, String> tableAlias = new HashMap<>();
+        if (plainSelect.getJoins() == null) return null;
         for (Join j : plainSelect.getJoins()) {
             String s[] = j.toString().split(" ");
             tableAlias.put(j.getRightItem().getAlias().getName(), s[0]);
