@@ -32,7 +32,7 @@ public class RecordManager {
 
     private static Record make(Row row, int rowid) throws SQLError, Exception {
         Record record = new Record(Record.T_TUPLE, rowid);
-        record.setPayload(row.serialize().array());
+        //record.setPayload(row.serialize().array());
         return record;
     }
 
@@ -47,7 +47,7 @@ public class RecordManager {
      * @throws Exception
      */
     public static List<Record> make(Row row, int rowid, int size) throws SQLError, Exception {
-        byte[] payload = row.serialize().array();
+        byte[] payload = null; //row.serialize().array();
 
         List<Record> records = new LinkedList<>();
         if (payload.length <= size) {
@@ -73,7 +73,7 @@ public class RecordManager {
 
     public static Record make(TableSchema table) throws SQLError {
         Record record = new Record(Record.T_TABLE, DBManager.tables.size() + 1);
-        record.setPayload(table.serialize().array());
+        //record.setPayload(table.serialize().array());
         return record;
     }
 

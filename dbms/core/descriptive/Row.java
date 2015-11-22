@@ -1,101 +1,57 @@
 package core.descriptive;
 
-import core.util.Misc;
+import org.mapdb.Serializer;
 
-import java.nio.ByteBuffer;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * @author Bogdan Vaneev
  *         Innopolis University
  *         10/27/2015
  */
-public class Row implements Comparable<Row> {
-    Object[] attrs;
+public class Row implements Serializable {
+    final Object[] attrs;
+    String tbl_name;
 
-    private int[] pk;
-
-    public Row(Object[] attrs, int[] index) {
+    public Row(Object[] attrs, String tbl_name) {
+        super();
         this.attrs = attrs;
-        this.pk = index;
+        this.tbl_name = tbl_name;
     }
 
-    Row() {
-    }
-
-    public static Row deserialize(ByteBuffer b, TableSchema t) {
-        Row row = new Row();
-
-        row.attrs = new Object[t.attributes.length];
-        for (int i = 0; i < t.attributes.length; i++) {
-            switch (t.attributes[i].type) {
-                case Attribute.T_BYTE:
-                    row.attrs[i] = Misc.parseBytes(b);
-                    break;
-
-                case Attribute.T_FLOAT:
-                    row.attrs[i] = b.getFloat();
-                    break;
-
-                case Attribute.T_TEXT:
-                    row.attrs[i] = Misc.parseStr(b);
-                    break;
-
-                case Attribute.T_INT:
-                    row.attrs[i] = b.getInt();
-                    break;
-
-                case Attribute.T_SHORT:
-                    row.attrs[i] = b.getShort();
-                    break;
+    public static Serializer getSerializer(TableSchema schema) {
+        return new Serializer<Row>() {
+            @Override
+            public void serialize(DataOutput dataOutput, Row row) throws IOException {
+                for (int i = 0; i < row.attrs.length; i++) {
+                    if (schema.attributes[i].type == Attribute.T_TEXT) dataOutput.writeUTF((String) row.attrs[i]);
+                    else if (schema.attributes[i].type == Attribute.T_INT) dataOutput.writeInt((Integer) row.attrs[i]);
+                    else if (schema.attributes[i].type == Attribute.T_SHORT)
+                        dataOutput.writeShort((Short) row.attrs[i]);
+                    else if (schema.attributes[i].type == Attribute.T_FLOAT)
+                        dataOutput.writeFloat((Float) row.attrs[i]);
+                }
             }
-        }
 
-        return row;
-    }
+            @Override
+            public Row deserialize(DataInput dataInput, int q) throws IOException {
+                Object[] attrs = new Object[schema.attributes.length];
 
-    public Object getPk() {
-        if (this.getPkLength() == 1) {
-            return this.attrs[0];
-        } else {
-            String ind = "";
-            for (int i = 0; i < pk[i]; i++) {
-                ind += attrs[i].toString() + (char) 0;
+                for (int i = 0; i < attrs.length; i++) {
+                    if (schema.attributes[i].type == Attribute.T_TEXT) attrs[i] = (String) dataInput.readUTF();
+                    else if (schema.attributes[i].type == Attribute.T_INT) attrs[i] = (Integer) dataInput.readInt();
+                    else if (schema.attributes[i].type == Attribute.T_SHORT)
+                        attrs[i] = (Short) dataInput.readShort();
+                    else if (schema.attributes[i].type == Attribute.T_FLOAT)
+                        attrs[i] = (Float) dataInput.readFloat();
+                }
+
+                return new Row(attrs, schema.tbl_name);
             }
-            return ind;
-        }
+        };
     }
-
-    public int getPkLength() {
-        return pk.length;
-    }
-
-    @Override
-    public int compareTo(Row o) {
-        return ((Comparable) getPk()).compareTo(o.getPk());
-    }
-
-    public ByteBuffer serialize() throws Exception {
-        int size = 0;
-        for (int i = 0; i < attrs.length; i++) {
-            if (attrs[i] instanceof String) size += 2 + ((String) attrs[i]).getBytes().length;
-            else if (attrs[i] instanceof byte[]) size += 2 + ((byte[]) attrs[i]).length;
-            else if (attrs[i] instanceof Integer) size += 4;
-            else if (attrs[i] instanceof Short) size += 2;
-            else if (attrs[i] instanceof Float) size += 4;
-            else throw new Exception("Wrong type");
-        }
-
-        ByteBuffer b = ByteBuffer.allocate(size);
-        for (int i = 0; i < attrs.length; i++) {
-            if (attrs[i] instanceof String) Misc.addStr(b, (String) attrs[i]);
-            else if (attrs[i] instanceof byte[]) Misc.addBytes(b, (byte[]) attrs[i]);
-            else if (attrs[i] instanceof Integer) b.putInt((int) attrs[i]);
-            else if (attrs[i] instanceof Short) b.putShort((short) attrs[i]);
-            else if (attrs[i] instanceof Float) b.putFloat((float) attrs[i]);
-            else throw new Exception("Wrong type");
-        }
-        return b;
-    }
-
 
 }

@@ -1,18 +1,13 @@
 package core.descriptive;
 
-import core.exceptions.RecordStatus;
-import core.exceptions.SQLError;
-import core.util.Misc;
-import org.junit.Test;
-
-import java.nio.ByteBuffer;
-
 /**
  * @author Bogdan Vaneev
  *         Innopolis University
  *         11/3/2015
  */
 public class SerializationTest {
+    /*
+
     @Test
     public void testTable() throws Exception, SQLError {
         TableSchema t = new TableSchema();
@@ -111,4 +106,6 @@ public class SerializationTest {
         if (a.fk != null && a.fk.equals(ac.fk)) throw new Exception("ATTR: Not equal foreign key");
         if (a.rootpage != ac.rootpage) throw new Exception("ATTR: Not equal rootpage");
     }
+
+    */
 }

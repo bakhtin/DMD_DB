@@ -28,11 +28,20 @@ public class DBServerThread extends Thread {
         ) {
             String inputLine, outputLine = "";
 
-            out.println("SMDB v.0.1-pre-alpha Connection ready");
+            out.println("CONNECTION_OK");
 
             while ((inputLine = in.readLine()) != null) {
+
+                if (inputLine.equals("Bye")) {
+                    DBServer.db.commit();
+                    DBServer.db.close();
+                    break;
+                }
+
+
+
                 try {
-                    outputLine = DBServer.SMDB.processQuery(inputLine);
+                    outputLine = Server.DBServer.SMDB.processQuery(inputLine);
                     out.println(outputLine);
                 } catch (SQLError e) {
                     out.println();
@@ -49,8 +58,7 @@ public class DBServerThread extends Thread {
                     recordStatus.printStackTrace();
                 }
 
-                if (outputLine.equals("Bye"))
-                    break;
+
             }
             socket.close();
         } catch (IOException e) {
