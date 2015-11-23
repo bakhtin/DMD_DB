@@ -18,7 +18,6 @@ import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.Select;
 import org.mapdb.BTreeKeySerializer;
 import org.mapdb.Serializer;
 
@@ -98,7 +97,7 @@ public class DBManager {
             analyzeInsert(statements);
         } else if (statements.getStatements().get(0) instanceof CreateTable) {
             analyzeCreateTable(statements);
-        } else if (statements.getStatements().get(0) instanceof Select) {
+        } else if (statements.getStatements().get(0) instanceof net.sf.jsqlparser.statement.select.Select) {
             analyzeSelect(statements);
         }
         return "QUERY_OK";
@@ -109,8 +108,8 @@ public class DBManager {
      * SELECT
      **/
     private static void analyzeSelect(Statements statements) {
-        Select statement = (Select) statements.getStatements().get(0);
-        ParseSelectVisitor visitor = new ParseSelectVisitor();
+        net.sf.jsqlparser.statement.select.Select statement = (net.sf.jsqlparser.statement.select.Select) statements.getStatements().get(0);
+        Select visitor = new Select();
         statement.getSelectBody().accept(visitor);
     }
 
@@ -216,6 +215,9 @@ public class DBManager {
                 for (int i = 0; i < line.length; i++) {
                     line[i] = TypeCaster(line[i]);
                 }
+
+                if ((int) line[0] == 145873)
+                    System.out.println("hui");
 
                 Attribute[] attrsArray = tSchema.attributes;
                 TreeSet<Integer> indexList = new TreeSet<>();

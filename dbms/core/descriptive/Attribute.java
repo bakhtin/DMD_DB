@@ -143,6 +143,7 @@ public class Attribute implements Serializable {
         if (type.matches(".*(?:varchar|text).*")) return T_TEXT;
         if (type.matches(".*(?:float).*")) return T_FLOAT;
         if (type.matches(".*(?:short).*")) return T_SHORT;
+        if (type.matches(".*(?:date).*")) return T_TEXT;
         return T_BYTE;
     }
 

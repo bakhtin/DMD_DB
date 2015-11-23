@@ -16,10 +16,22 @@ public class Row implements Serializable {
     final Object[] attrs;
     String tbl_name;
 
-    public Row(Object[] attrs, String tbl_name) {
+    public Row(Object[] attrs) {
         super();
         this.attrs = attrs;
-        this.tbl_name = tbl_name;
+    }
+
+    public Row(Object[] pk, Object[] val) {
+        super();
+        this.attrs = new Object[pk.length + val.length];
+        int q = 0;
+        for (int i = 0; i < attrs.length; i++) {
+            if (i < pk.length) {
+                this.attrs[i] = pk[i];
+            } else {
+                this.attrs[i] = val[q++];
+            }
+        }
     }
 
     public static Serializer getSerializer(TableSchema schema) {
@@ -49,7 +61,7 @@ public class Row implements Serializable {
                         attrs[i] = (Float) dataInput.readFloat();
                 }
 
-                return new Row(attrs, schema.tbl_name);
+                return new Row(attrs);
             }
         };
     }

@@ -6,7 +6,7 @@ package core.descriptive;
  *         11/3/2015
  */
 public class SerializationTest {
-    /*
+    /* OLD SERIALIZATOR. NOT USING ANYMORE
 
     @Test
     public void testTable() throws Exception, SQLError {

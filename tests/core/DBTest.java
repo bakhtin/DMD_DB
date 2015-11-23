@@ -22,7 +22,7 @@ public class DBTest {
                 "and p.id = 1050\n" +
                 "and p.publisher_id=pshr.id";
 
-        query = "select id from publication where title=\"new_title\";";
+        query = "select * from affiliation";
 
         String response = DBManager.processQuery(query);
 
